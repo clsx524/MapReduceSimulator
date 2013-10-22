@@ -1,0 +1,161 @@
+\documentclass{Project}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{multirow}
+\usepackage{graphicx}
+\newcommand{\minitab}[2][l]{\begin{tabular}{#1}#2\end{tabular}} 
+\begin{document}
+
+\title{Proposal for Project 1: Big Data Demystified}
+\numberofauthors{8} 
+\author{
+\alignauthor
+Xin Zhou\\
+       \affaddr{Department of ECE}\\
+       \affaddr{Duke University}\\
+       \email{xin.zhou@duke.edu}
+% 2nd. author
+\alignauthor Di Jin\\
+       \affaddr{Department of ECE}\\
+       \affaddr{Duke University}\\
+       \email{di.jin@duke.edu}
+% 3rd. author
+\alignauthor
+Huayang Cui\\
+       \affaddr{Department of CS}\\
+       \affaddr{Duke University}\\
+       \email{hycui@cs.duke.edu}
+}
+
+\maketitle
+\begin{abstract}
+  The infrastructure for supporting big data contains many aspects(e.g., the scheduling disciplines, the network architecture, the mechanisms for effectively sharing the network, the mechanism for enforcing low latency). In order to achieve the best performance, different combination of these techniques are applied under different circumstances.\par
+  This paper presents the analysis of the best configuration for different environment based on simulation of MapReduce. The simulator applied is based on MyPerf and MRSim. In order to explore the configuration under different environment, traces from Facebook and Cloudera are utilized.
+\end{abstract}
+
+\keywords{simulation, MapReduce, performance modeling, environment}
+
+\section{Motivation}
+In order to obtain better performance for processing big data, various methods have been studied. Over the last few years, various methods are given to improve different components in isolation. However, since these methods are developed based on models with different properties(e.g., scale, network), a given workload cannot apply all of these improvements. Therefore, determining the best configuration of different components for a given workload becomes critical: It provides enterprises a practical way to achieve the best performance. \par
+On the other hand, in the process of determining the best combination of components, it is difficult to apply various methods on the same workload in a real data center. Alternatively, simulation presents a faster approach because of its features: convenience, ease-to-replace. With proper simulation method, the result obtained can be applied to real data center, thus saves time and cost.\par
+In order to obtain the best simulation results, traces from facebook and Cloudera are applied.
+
+\section{Related Work}
+Cardona et al.\footnote{K. Cardona, J.Secretan, M. Georgiopoulos, and G. Anagnostopoulos. A Gird Based System for Data Mining Using MapReduce. Technical Report TR-2007-02, The AMALTHEA REU Program, 2007.} implemented a simple simulator for MapReduce workloads to evaluate scheduling algorithms; Guanying Wang\footnote{Guanying Wang. Evaluating MapReduce System Performance: A Simulation Approach. PhD degree thesis, 2012.} implemented MR Perf, a simulator for MapReduce; Google Project\footnote{Google Project. mrsim-Map Reduce Simulator. website: http://code.google.com/p/mrsim/} implemented MR Sim, an open-source simulator for MapReduce as well.\par
+Roughly, the simulators can be classified into two categories: schedulers evaluation and individual jobs simulation.
+\subsection{MapReduce Simulators for Evaluating Schedulers}
+According to Guanying Wang, the simulator from Cardona et al. was the first MapReduce Simulator for evaluating schedulers. Mumak\footnote{A.C. Murthy. Mumak: Map-Reduce Simulator. MAPREDUCE-728, Apache JIRA, Also available at http://issues.apche.org/jira/browse/MAPREDUCE-728, 2009.} implemented a simulator adopting Hadoop code. This simulator runs within actual world. SimMR\footnote{A. Verma, L. Cherkasova, and R.H. Campbell. Play It Again, SimMR! In \emph{2011 IEEE International Conference on Cluster Comupting}, page 253-261. IEEE, Sept. 2011.} is implemented from scratch, which does not run schedulers implemented in Hadoop code. Therefore, simulation run done by these simulators should be fast.
+\subsection{Limitations of Prior Works}
+Most of prior simulators are limited in that they are not aware of resource contention, so tasks execution time may not be accurate. In addition, these simulators are not aware of other jobs in a workload, which makes them not applicable unless only one job is on a cluster. These disadvantages were overcame by MR Perf, according to Guanying Wang. However, MR Perf has limitation as well: its network simulation is based on ns-2. Compared with ns-3, ns-3 performs better and currently actively developed.\par
+Our simulator combines festures of both MR Perf and MR Sim based on ns-3. Table 1 shows a comparison of advantages and drawbacks of simulators.
+\begin{table}
+\caption{Comparison of MapReduce simulators.}
+\begin{tabular}{c|p{0.15\columnwidth}|p{0.2\columnwidth}|p{0.2\columnwidth}p{0.2\columnwidth}}
+ \hline
+&based on&Workload-aware&Resource-contention-aware\\ \hline
+Our simulator & ns-3 & yes &yes\\ \hline
+MRPerf & ns-2 & yes &yes\\ \hline
+Cardona et al.& GridSim & yes no\\\hline
+Mumak & Hadoop & yes & yes\\\hline
+SimMR & from scratch & yes & no\\ \hline
+HSim & from sctatch & no & yes \\\hline
+MRSim & GridSim & no & yes\\\hline
+SimMapReduce & GridSim & no & yes\\\hline
+\end{tabular}
+
+\end{table}
+\section{Rough Implementation Proposal}
+
+In this project, we plan to adopt a simulation approach to explore the impact of design choices in MapReduce setups. We are concerned with the following components:
+\begin{itemize}
+ \item
+ Compute Scheduling: Quincy Scheduler, Delay Scheduling, Default Scheduler
+ \item
+ Network Sharing(Congestion Control): TCP, seawall, Orchester
+ \item
+ Network Topology: Tree, VL2, Fat-tree, Helios/C-through
+ \item
+ Compute Sharing: Mesos, Omega
+ \item
+ Perofrmance Hacks: dynamic number of replicas, Cloning tasks, speculative execution
+\end{itemize}
+\subsection{Simulator Implementation}
+\subsubsection{Setup Parameters}
+The simulator that we build aims to comprehensively capture the various design parameters of MapReduce setup. Building a simulator is challenging. The simulator we build aims to explore the impact of factors such as data-locality, network topology, failure on overall performance. These factors can be classified into design choices concerning infrastructure implementation, application management configuration, and framework management techniques.A brief summary of key design parameters modeled in shown in table 2.
+\begin{table}
+\caption{MapReduce setup parameters modeled}
+\begin{tabular}{p{0.24\columnwidth}|p{0.6\columnwidth}}
+ \hline
+      Category           &                  Example \\ \hline
+Cluster parameters       & 1. Node CPU, RAM, and disk characteristics \\ 
+                         & 2. Node \& Rack heterogeneity \\
+                         & 3. Network topology(inter \& intra-rack) \\
+                         & 4. Network sharing \\ \hline
+Configuration parameters & 1. Data chunk size used by the storage layer \\ 
+                         & 2. Map and reduce task slots per node \\
+                         & 3. Number of reduce tasks in a job \\
+                         & 4. Compute sharing \\ \hline
+Framework parameters     & 1. Shuffle-phase data movement protocol \\
+                         & 2. Task scheduling algorithm \\ 
+                         & 3. Data placement algorithm \\ \hline
+\end{tabular}
+\end{table}\par
+
+\subsubsection{Architecture}
+The rough architecture of our simulator is shown as Figure 1, and we plan to build it based on Java. Also, the network simulator is ns-3.
+\begin{figure}[!htb]
+\centering
+\caption{Simulator Architecture}
+\includegraphics[width=2.77in,height=1.75in]{architecture.jpg}
+\label{fig:graph}
+\end{figure}
+
+\subsubsection{Jobtracker}
+\emph{Input: } The trace
+
+\emph{Resource allocation strategy: } 
+
+The resource allocation strategy includes Mesos and Omega which have full knowledge of the topology of all nodes and the number of slots in each node.
+
+The input is the jobID, the output of the scheduling module that decides which map/reduce task will be executed next. The output is the placement of the task to certain slots in Node network.
+
+\emph{Output:}
+
+The output includes three levels of information. For each job, it includes the arrival and departure time, the amount of data transferred in the network. For each task, it includes the timestamp for ready, start and end state. For each network operation, it includes the start and end time and the full path from the source to the destination.
+
+\subsubsection{Scheduling}
+Given the information from the trace, the scheduling module maintains a queue, denoted as jobQ, which includes the arrival and departure time of jobs, the start and end time of each map/reduce time and a signal indicating the end of the map task. There are mainly two functions to decide the next map task and reduce task from jobQ, both of which will output the jobID to be executed and related information, e.g., the length of the task, the amount of data that will transfer.
+
+\subsubsection{Storage Design}
+\emph{Input:}
+
+1. The number of replica: there is a default value for this. Users can also customize the value
+
+2. Input for background traffic, including the traffic size(in Bytes), frequency and number of simultaneous transmit
+
+\emph{Inner algorithm:}
+
+1. replication algorithm to define the number of replica
+
+2. replication placement algorithm to decide the places for replica
+
+\subsubsection{Node}
+Including
+
+1. The number of slots in each node 
+
+2. The vacancy of each slot 
+
+3. How many data transfer from and to this node
+
+\subsubsection{Speculative execution}
+Including the algorithm to simulate the progress of data transfer in the map phase and to predict the finish time for the task. 
+
+\subsection{TimeTable}
+By 10/31 finish the main part of the simulator and write the API for all components
+
+By 11/15 finish all components
+
+By 11/30 write the algorithm to find the optimal combination for certain trace
+
+\end{document}
