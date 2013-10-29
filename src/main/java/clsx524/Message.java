@@ -2,20 +2,16 @@ package clsx524
 
 
 public class Message {
-    private int[] slotInfo = new int[2];
-    
-    public Message(int node, int slot){
-        this.slotInfo[0]=node;
-        this.slotInfo[1] = slot;
+    private node  nodeInstace = null;
+    public Message(node nodeInstance){
+        This.nodeInstance = nodeInstance;
     }
 
-    public int[] getMsg() {
-        return this.slotInfo;
+    public node getMsg() {
+        return this.nodeInstance;
     }
-    public 
-    public void setMsg(int node, int slot) {
-        this.slotInfo[0] = node;
-        this.slotInfo[1] = slot;
+    public void setMsg(node nodeInstance) {
+        this.nodeInstance = nodeInstance;
     }
 
 }
