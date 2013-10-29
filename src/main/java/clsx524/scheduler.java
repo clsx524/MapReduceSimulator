@@ -1,4 +1,4 @@
-package clsx524;
+package mrsimulator;
 
 public class scheduler {
 
