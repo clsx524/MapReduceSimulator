@@ -1,8 +1,9 @@
 package mrsimulator;
 
-public class networkSimulator {
+public class networkSimulator extends  Thread {
 
 	private static networkSimulator instance = null;
+	private Arraylist<node> nodeInstances = new Arraylist<node>();
 	private networkSimulator() {
 
 	}
@@ -15,7 +16,5 @@ public class networkSimulator {
 	
 
 
-	public Integer[] getAllAvailableSlots() {
-
-	}
+	
 }

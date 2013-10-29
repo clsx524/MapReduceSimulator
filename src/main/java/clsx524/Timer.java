@@ -1,6 +1,6 @@
 package mrsimulator;
 
-import java.util.concurrent.Callable;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -11,7 +11,8 @@ public class Timer extends Thread
 	private int corePoolSize = 1000;
 	private ScheduledThreadPoolExecutor slots = null;
 	public  boolean runSlots = Flase;
-	private 
+	private Messgae msg;
+	private  node nodeInstance = null;
 	public Timer()
 	{
 		super();
@@ -19,14 +20,29 @@ public class Timer extends Thread
 		start();
 	} 
 
+	public void getMessage(Messgae msg) {
+		this.msg = msg;
+	}
+
+// wait until notify by networksimulator
 	public void run() {
         try {
         	int runHisCount = 0;
             while (true) {
-                msg.wait();
-                ScheduledFuture<Integer> Integer.toString(runHisCount++) = slots.schedule( new Runnable( ){	public void run(){
-        	
-     																									} }, 2, TimeUnit.SECONDS);
+                synchronized(msg) {
+                try {
+                	msg.wait();
+                	}catch(InterruptedException e) {
+                	e.printStackTrace();
+                	}
+                }
+        					
+                ScheduledFuture<Integer> Integer.toString(runHisCount++) = slots.schedule( new Runnable( ) {	
+                	public void run() {
+                	 nodeInstance = msg.getMessage();
+
+     				} 
+     			}, 2, TimeUnit.SECONDS);
             }
         } catch (InterruptedException e) {
         }
