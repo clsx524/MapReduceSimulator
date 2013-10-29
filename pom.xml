@@ -9,7 +9,7 @@
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <exec.mainClass>clsx524.Jobtracker</exec.mainClass>
+    <exec.mainClass>mrsimulator.Jobtracker</exec.mainClass>
   </properties>
 
   <dependencies>
