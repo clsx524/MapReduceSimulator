@@ -11,16 +11,14 @@ public class SimulatorEngine {
 
 	private NetworkSimulator networkInstance = null;
 
-<<<<<<< HEAD
 	private Timer timer = null;
 
 	private Configure config = null;
 
 	private Random rd = new Random(System.currentTimeMillis());
-=======
+
 	public simulatorEngine() {
 		inputReader = new BufferedReader(new FileReader(inputPath));
->>>>>>> c2c3a20af3c8a2f9a5dd33fae134f5abecf002d5
 
 	private TimerMessage tmsg = null;
 
@@ -70,7 +68,6 @@ public class SimulatorEngine {
         jobIterator = allJobs.iterator();
 	}
 
-<<<<<<< HEAD
 	private JobInfo getOneJob() {
 		if (jobIterator.hasNext()) {
 			String[] strs = jobIterator.next().split("\\t");
@@ -85,39 +82,24 @@ public class SimulatorEngine {
 			job.setPrefs(prefs);
 			return job;
 		}
-=======
 	private String[] getOneJob() {
 		if (jobIterator.hasNext())
 			return jobIterator.next().split("\\t");
->>>>>>> c2c3a20af3c8a2f9a5dd33fae134f5abecf002d5
 		return null;
 	}
-
 
 
 	private ArrayList<Integer> getPreference(String[] job) {
 		
 	}
 
-
-
-
-
-
-
-	
-    
-
     public static void main( String[] args) {
     	String[] job = null;
     	while ((job = getOneJob()) != null) {
-<<<<<<< HEAD
     		tmsg.setJobMsg(job, "JOB");
     		tmsg.notify();
-=======
     		ArrayList<Integer> prefs = getPreference(job);
     		schedulerInstance.schedule(job, prefs);
->>>>>>> c2c3a20af3c8a2f9a5dd33fae134f5abecf002d5
     	}
 
     	schedulerInstance.join();

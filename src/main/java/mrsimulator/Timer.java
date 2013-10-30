@@ -6,7 +6,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-<<<<<<< HEAD
+
 public class Timer extends Thread {
 	private final int corePoolSize = 10000;
 	private final ScheduledThreadPoolExecutor slots;
@@ -62,53 +62,6 @@ public class Timer extends Thread {
         public void run() {
             scheduler.schedule(job);
         }
-=======
-public class Timer extends Thread
-{
-	private int corePoolSize = 1000;
-	private ScheduledThreadPoolExecutor slots = null;
-	public  boolean runSlots = Flase;
-	private Messgae msg;
-	private  node nodeInstance = null;
-	public Timer()
-	{
-		super();
-		slots = new ScheduledThreadPoolExecutor(corePoolSize);
-		start();
-	} 
-
-	public void getMessage(Messgae msg) {
-		this.msg = msg;
-	}
-
-// wait until notify by networksimulator
-	public void run() {
-        try {
-        	int runHisCount = 0;
-            while (true) {
-                synchronized(msg) {
-                try {
-                	msg.wait();
-                	}catch(InterruptedException e) {
-                	e.printStackTrace();
-                	}
-                }
-        					
-                ScheduledFuture<Integer> Integer.toString(runHisCount++) = slots.schedule( new Runnable( ) {	
-                	public void run() {
-                	 nodeInstance = msg.getMessage();
-
-     				} 
-     			}, 2, TimeUnit.SECONDS);
-            }
-        } catch (InterruptedException e) {
-        }
-    }
-
-	class slotRunning implements Runnable
-	{
-
->>>>>>> c2c3a20af3c8a2f9a5dd33fae134f5abecf002d5
 	}
 
     class TaskAfterTimerDone implements Runnable {
