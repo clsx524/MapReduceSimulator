@@ -15,6 +15,8 @@ public class SchedulerFactory {
 	}
 
 	public static Scheduler getInstance() {
+		if (schedulerInstance == null)
+			throw new NullPointerException("schedulerInstance is null");
 		return schedulerInstance;
 	}
 }

@@ -2,13 +2,25 @@ package mrsimulator;
 
 public class JobInfo {
 
-	private class taskInfo {
+	public class TaskInfo {
 
-		public String type;
-		public Integer taskID;
-		public Integer duration;
-		public Integer fileSize;
-		public Integer nodeIndex;
+		private Integer taskID;
+		private Integer duration;
+		private Integer fileSize;
+		private Integer nodeIndex;
+		private Integer startTime;
+
+		public Integer getJobID() {
+			return jobID;
+		}
+
+		public Integer getStartTime() {
+			return startTime;
+		}
+
+		public void setStartTime(Integer t) {
+			startTime = t;
+		}
 	}
 
 	private Integer jobID = -1;
@@ -22,8 +34,8 @@ public class JobInfo {
 	private Integer mapNumber;
 	private Integer reduceNumber;
 
-	private taskInfo[] maps = null; // how to make sure map scheduled before reduce
-	private taskInfo[] reduces = null;
+	private TaskInfo[] maps = null; // how to make sure map scheduled before reduce
+	private TaskInfo[] reduces = null;
 
 	private ArrayList<Integer> prefs = null;
 
@@ -38,6 +50,14 @@ public class JobInfo {
 
 		if (strs.length > 6) 
 			inputNode = Long.parseLong(strs[6].substring(9));
+	}
+
+	public TaskInfo[] getMaps() {
+		return maps;
+	}
+
+	public TaskInfo[] getReduces() {
+		return reduces;
 	}
 
 	public Integer getJobID() {

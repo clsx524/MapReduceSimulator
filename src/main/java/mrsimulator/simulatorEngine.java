@@ -7,6 +7,8 @@ public class SimulatorEngine {
 	private ArrayList<String> allJobs = new ArrayList<String>();
 	private Iterable<String> jobIterator = null;
 
+	private Jobtracker jobtrackerInstance = null;
+
 	private Scheduler schedulerInstance = null;
 
 	private NetworkSimulator networkInstance = null;
@@ -47,9 +49,12 @@ public class SimulatorEngine {
 
 		timer = Timer.getInstance(config.get("corePoolSize"));
 
+		jobtrackerInstance = Jobtracker.newInstance(allJobs);
+
 		networkInstance.start();
 		schedulerInstance.start();
-		timer.start();		
+		timer.start();	
+		jobtrackerInstance.start();	
 	}
 
 	private void readConfig() {
@@ -98,8 +103,7 @@ public class SimulatorEngine {
     	while ((job = getOneJob()) != null) {
     		tmsg.setJobMsg(job, "JOB");
     		tmsg.notify();
-    		ArrayList<Integer> prefs = getPreference(job);
-    		schedulerInstance.schedule(job, prefs);
+    		Thread.sleep(2000);
     	}
 
     	schedulerInstance.join();

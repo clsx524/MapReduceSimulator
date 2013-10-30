@@ -2,21 +2,21 @@ package mrsimulator;
 
 public class FIFOScheduler implements scheduler extends Thread {
 
-	private class ArrivalTimeComparator implements Comparator<JobInfo> {
-		public int compare(JobInfo j1, JobInfo j2) {
-			return j1.getArrivalTime().compareTo(j2.getArrivalTime());
+	private class StartTimeComparator implements Comparator<JobInfo.TaskInfo> {
+		public int compare(JobInfo.TaskInfo j1, JobInfo.TaskInfo j2) {
+			return j1.getStartTime().compareTo(j2.getStartTime());
 		}
 	}
 
-	private PriorityQueue<JobInfo> queue = null;
-	private ArrivalTimeComparator atc = new ArrivalTimeComparator();
+	private PriorityBlockingQueue<JobInfo.TaskInfo> queue = null;
+	private StartTimeComparator atc = new StartTimeComparator();
 
 	private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
 
 	private static Scheduler instance = null;
 
 	private FIFOScheduler() {
-		queue = new PriorityQueue(1);
+		queue = new PriorityBlockingQueue<JobInfo.TaskInfo>(1, atc);
 	}
 
 	public static scheduler getInstance() {
@@ -26,10 +26,16 @@ public class FIFOScheduler implements scheduler extends Thread {
 		return instance;
 	} 
 
-	public int schedule(JobInfo job) {
+	public int schedule(JobInfo job, String type) {
 		if (job == null)
             throw new NullPointerException("job is null");
-		queue.add(job);
+
+        if (type.equals("MAP"))
+        	for (JobInfo.TaskInfo task : job.getMaps()) {
+        		task.setStartTime(System.currentTimeMillis());
+        		queue.add(task);
+        	}
+				
 	}
 
 	public void run() {

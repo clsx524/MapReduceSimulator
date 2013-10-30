@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class Timer extends Thread {
-	private final int corePoolSize = 10000;
+	private final int corePoolSize;
 	private final ScheduledThreadPoolExecutor slots;
 	private final TimerMessage tmsg;
     private final NetworkSimulator networksimulator;
@@ -16,6 +16,8 @@ public class Timer extends Thread {
 	private static Timer timer = null;
 
     private Timer(int size) {
+        if (size < 0)
+            corePoolSize = 10000;
         corePoolSize = size;
         slots = new ScheduledThreadPoolExecutor(corePoolSize);
         tmsg = TimerMessage.getInstance();  
@@ -55,12 +57,12 @@ public class Timer extends Thread {
 
         private JobInfo job;
 
-        public AfterTimerDone(JobInfo j) {
+        public JobAfterTimerDone(JobInfo j) {
             job = j;
         }
 
         public void run() {
-            scheduler.schedule(job);
+            scheduler.schedule(job, "MAP");
         }
 	}
 
@@ -68,7 +70,7 @@ public class Timer extends Thread {
 
         private Integer nodeIndex;
 
-        public AfterTimerDone(Integer ni) {
+        public TaskAfterTimerDone(Integer ni) {
             nodeIndex = ni;
         }
 
