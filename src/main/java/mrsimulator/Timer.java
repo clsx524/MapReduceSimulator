@@ -6,47 +6,74 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class Timer extends Thread {
-	private int corePoolSize = 10000;
-	private ScheduledThreadPoolExecutor slots = null;
-	private timerMessage msg;
-	private  node nodeInstance = null;
-	
-    public Timer(int size, Messgae m) {
-		super();
+	private final int corePoolSize = 10000;
+	private final ScheduledThreadPoolExecutor slots;
+	private final TimerMessage tmsg;
+    private final NetworkSimulator networksimulator;
+    private final Scheduler scheduler;
+	private static Timer timer = null;
+
+    private Timer(int size) {
         corePoolSize = size;
-        msg = m;
-		slots = new ScheduledThreadPoolExecutor(corePoolSize);
-		start();
-	} 
+        slots = new ScheduledThreadPoolExecutor(corePoolSize);
+        tmsg = TimerMessage.getInstance();  
+        networksimulator = NetworkSimulator.getInstance();  
+        scheduler = SchedulerFactory.getInstance();    
+    }
 
-// wait until notify by networksimulator
+    public static Timer getInstance(int size) {
+        if (timer == null)
+            timer = new Timer(int size);
+        return timer;
+    } 
+
+    // wait until notify by networksimulator
 	public void run() {
-
         while (true) {
-            synchronized(msg) {
+            synchronized(tmsg) {
                 try {
-            	   msg.wait();
+            	   tmsg.wait();
                 } catch (InterruptedException e) {
             	   e.printStackTrace();
                 }
-            }	
-        msg.getNode().decrement();	
-        slots.schedule(new slotRunning(msg.getNode()), msg.getDuration(), TimeUnit.NANOSECONDS);
+            }
+            if (tmsg.getType().equals("JOB"))
+                slots.schedule(new JobAfterTimerDone(tmsg.getJobInfo()), tmsg.getDuration(), TimeUnit.SECONDS);
+            else if (tmsg.getType().equals("TASK")) {
+                Integer nodeIndex = tmsg.getNodeIndex();
+                networksimulator.occupyOneSlotAtNode(nodeIndex);
+                slots.schedule(new TaskAfterTimerDone(nodeIndex), tmsg.getDuration(), TimeUnit.SECONDS);
+            } else 
+                throw new IllegalArgumentException("Invalid TimerMessage Type");
+                
         }
     }
 
-	class slotRunning implements Runnable {
-        private node nodeInstance = null;
+	class JobAfterTimerDone implements Runnable {
 
-        public slotRunning(node ni) {
-            nodeInstance = ni;
+        private JobInfo job;
+
+        public AfterTimerDone(JobInfo j) {
+            job = j;
         }
 
         public void run() {
-            if (nodeInstance == null)
-                throw new NullPointerException("nodeInstance is null");
-            nodeInstance.increment();
+            scheduler.schedule(job);
         }
 	}
+
+    class TaskAfterTimerDone implements Runnable {
+
+        private Integer nodeIndex;
+
+        public AfterTimerDone(Integer ni) {
+            nodeIndex = ni;
+        }
+
+        public void run() {
+            networksimulator.addOneSlotAtNode(nodeIndex);
+        }
+    }
+
 }
 

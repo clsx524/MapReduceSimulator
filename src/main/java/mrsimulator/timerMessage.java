@@ -1,31 +1,53 @@
 package mrsimulator;
 
-public class timerMessage {
-	private node nodeInstace = null;
-    private int duration = 0;
+public class TimerMessage {
 
-    private static timerMessage msg = null;
+    private JobInfo job;
+    private String type; // job or task
+    private Integer taskID;
+    private String taskType; // map or reduce
 
-    private timerMessage() {
-        
+    private static TimerMessage msg = null;
+
+    private TimerMessage() {
+        job = null;
     }
 
-    public static timerMessage getInstance() {
+    public static TimerMessage getInstance() {
         if (msg == null)
-            msg = new timerMessage();
+            msg = new TimerMessage();
         return msg;
     }
 
-    public node getNode() {
-        return this.nodeInstance;
+    public void setJobMsg(JobInfo j, String t) {
+        job = j;
+        type = t;
     }
 
-    public int getDuration() {
-        return this.duration;
+    public void setTaskMsg(JobInfo j, String t, Integer tid, String ty) {
+        job = j;
+        type = t;
+        taskID = tid;
+        taskType = ty;
     }
 
-    public void setMsg(node nodeInstance, int dur) {
-        this.nodeInstance = nodeInstance;
-        duration = dur;
+    public String getType() {
+        return type;
     }
+
+    public JobInfo getJobInfo() {
+        return job;
+    }
+
+    public long getDuration() {
+        if (type.equals("JOB"))
+            return job.getArrivalTime();
+        else if (type.equals("TASK"))
+            return job.getDurationWithTaskID(taskType, taskID).longValue();
+    }
+
+    public Integer getNodeIndex() {
+        job.getNodeIndexWithTaskID(taskType, taskID);
+    }
+
 }

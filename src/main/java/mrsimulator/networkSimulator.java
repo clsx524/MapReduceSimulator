@@ -1,62 +1,30 @@
 package mrsimulator;
 
-public class networkSimulator extends  Thread {
+public class NetworkSimulator extends Thread {
 
-	public class node {
-		private final int index;
-		private final int slotNumber;
+	private static NetworkSimulator instance = null;
 
-		public node() {
-			slotNumber = 0;
-			index = -1;
-		}
-
-		public setSlotNumber(int id, int sn) {
-			if (sn <= 0)
-				throw new IllegalArgumentException(sn + " <= 0");
-			slotNumber = sn;
-			index = id;
-		}
-
-		public synchronized int getAvailableSlotsNumber() {
-			return availableSlots[index];
-		}
-
-		public synchronized void increment() {
-			if (availableSlots[index] + 1 > slotNumber)
-				throw new IllegalArgumentException("Out of bound of total slots");
-			availableSlots[index]++;
-		}
-
-		public synchronized void decrement() {
-			if (availableSlots[index] - 1 < 0)
-				throw new IllegalArgumentException("Out of free slots to use");
-			availableSlots[index]--;			
-		}
-	}
-
-
-	private static networkSimulator instance = null;
-	private Arraylist<node> nodeInstances = new Arraylist<node>();
-	private node[] nodes = null;
 	private Integer[] availableSlots = null;
+	private Integer[] nodeInfo = null;
 
-	private networkSimulator() {
+	private final TimerMessage msg;
 
+	private NetworkSimulator() {
+		msg = TimerMessage.getInstance();
 	}
 
-	public void setNode(Arraylist<Integer> nodeInfo) {
-		nodes = new node[nodeInfo.size()];
-		availableSlots = new Integer[nodeInfo.size()];
-		for (int i = 0; i < nodeInfo.size(); i++) {
-			nodes[i].setSlotNumber(i, nodeInfo.get(i));
-			availableSlots[i] = nodeInfo.get(i);
-		}	
+	public void setNode(Arraylist<Integer> nodes) {
+		nodeInfo = (Integer[]) nodes.toArray();
+		availableSlots = (Integer[]) nodes.toArray();
+	}
+
+	public void setTopology(Map<>) {
+		
 	}
 
 	public static getInstance() {
 		if (instance == null)
-			instance = new networkSimulator();
+			instance = new NetworkSimulator();
 		return instance;
 	}
 
@@ -65,7 +33,23 @@ public class networkSimulator extends  Thread {
 	}
 
 	public Long getNodeNumber() {
-		return ndoes.length;
+		return nodeInfo.length;
+	}
+
+	public void run() {
+
+	}
+
+	public void occupyOneSlotAtNode(Integer nodeIndex) {
+		if (availableSlots[nodeIndex] - 1 < 0)
+			throw new IllegalArgumentException("Out of free slots to use");
+		availableSlots[nodeIndex]--;			
+	}
+
+	public void addOneSlotAtNode(Integer nodeIndex) {
+		if (availableSlots[nodeIndex] + 1 > nodeInfo[nodeIndex])
+			throw new IllegalArgumentException("Out of bound of total slots");
+		availableSlots[nodeIndex]++;
 	}
 	
 

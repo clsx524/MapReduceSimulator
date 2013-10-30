@@ -1,13 +1,7 @@
 package mrsimulator;
 
-public abstract class scheduler {
+interface Scheduler {
 
-	protected static scheduler instance = null;
-
-	protected static scheduler() {
-
-	}
-
-	public abstract int schedule(JobInfo job);
+	public int schedule(JobInfo job);
 
 }
