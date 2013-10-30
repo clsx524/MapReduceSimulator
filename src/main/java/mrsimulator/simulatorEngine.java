@@ -11,6 +11,8 @@ public class simulatorEngine {
 
 	private networkSimulator networkInstance = null;
 
+	private Random rd = new Random(System.currentTimeMillis());
+
 	public simulatorEngine() {
 		inputReader = new BufferedReader(new FileReader(inputPath));
 
@@ -45,32 +47,34 @@ public class simulatorEngine {
         jobIterator = allJobs.iterator();
 	}
 
-	private String[] getOneJob() {
-		if (jobIterator.hasNext())
-			return jobIterator.next().split("\\t");
+	private JobInfo getOneJob() {
+		if (jobIterator.hasNext()) {
+			String[] strs = jobIterator.next().split("\\t");
+			JobInfo job = new JobInfo(strs);
+			Long inputNode = -1;
+			if (strs.length <= 6)
+				inputNode = rd.nextLong() % networkInstance.getNodeNumber();
+			else
+				inputNode = job.getInputNode() % networkInstance.getNodeNumber();
+			job.setInputNode(inputNode);
+			ArrayList<Integer> prefs = getPreference(inputNode);
+			job.setPrefs(prefs);
+			return job;
+		}
 		return null;
 	}
 
 
 
-	private ArrayList<Integer> getPreference(String[] job) {
+	private ArrayList<Integer> getPreference(Long inputNode) { //  the input is obtained by our will
 		
 	}
 
 
-
-
-
-
-
-	
-    
-
     public static void main( String[] args) {
-    	String[] job = null;
+    	JobInfo job = null;
     	while ((job = getOneJob()) != null) {
-    		ArrayList<Integer> prefs = getPreference(job);
-    		schedulerInstance.schedule(job, prefs);
+    		schedulerInstance.schedule(job);
     	}
         
     }	
