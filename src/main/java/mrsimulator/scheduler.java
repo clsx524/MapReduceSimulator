@@ -1,13 +1,22 @@
 package mrsimulator;
 
-public abstract class scheduler {
+public class scheduler {
 
-	protected static scheduler instance = null;
+	private static scheduler instance = null;
 
 	protected static scheduler() {
 
 	}
 
-	public abstract int schedule(JobInfo job);
+	public static scheduler getInstance() {
+		if (instance == null)
+			instance = new scheduler();
+		return instance;
+	}
+
+	public int schedule(String[] job, ArrayList<Integer> prefs) {
+		Integer[] availableSlots = networkInstance.getAllAvailableSlots();
+	}
+
 
 }

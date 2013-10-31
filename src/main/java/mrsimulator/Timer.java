@@ -1,52 +1,56 @@
 package mrsimulator;
 
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class Timer extends Thread {
-	private int corePoolSize = 10000;
+public class Timer extends Thread
+{
+	private int corePoolSize = 1000;
 	private ScheduledThreadPoolExecutor slots = null;
-	private timerMessage msg;
+	public  boolean runSlots = Flase;
+	private Messgae msg;
 	private  node nodeInstance = null;
-	
-    public Timer(int size, Messgae m) {
+	public Timer()
+	{
 		super();
-        corePoolSize = size;
-        msg = m;
 		slots = new ScheduledThreadPoolExecutor(corePoolSize);
 		start();
 	} 
 
+	public void getMessage(Messgae msg) {
+		this.msg = msg;
+	}
+
 // wait until notify by networksimulator
 	public void run() {
-
-        while (true) {
-            synchronized(msg) {
+        try {
+        	int runHisCount = 0;
+            while (true) {
+                synchronized(msg) {
                 try {
-            	   msg.wait();
-                } catch (InterruptedException e) {
-            	   e.printStackTrace();
+                	msg.wait();
+                	}catch(InterruptedException e) {
+                	e.printStackTrace();
+                	}
                 }
-            }	
-        msg.getNode().decrement();	
-        slots.schedule(new slotRunning(msg.getNode()), msg.getDuration(), TimeUnit.NANOSECONDS);
+        					
+                ScheduledFuture<Integer> Integer.toString(runHisCount++) = slots.schedule( new Runnable( ) {	
+                	public void run() {
+                	 nodeInstance = msg.getMessage();
+
+     				} 
+     			}, 2, TimeUnit.SECONDS);
+            }
+        } catch (InterruptedException e) {
         }
     }
 
-	class slotRunning implements Runnable {
-        private node nodeInstance = null;
+	class slotRunning implements Runnable
+	{
 
-        public slotRunning(node ni) {
-            nodeInstance = ni;
-        }
-
-        public void run() {
-            if (nodeInstance == null)
-                throw new NullPointerException("nodeInstance is null");
-            nodeInstance.increment();
-        }
 	}
 }
 
