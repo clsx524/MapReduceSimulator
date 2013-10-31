@@ -9,6 +9,15 @@ public class JobInfo {
 		private Integer fileSize;
 		private Integer nodeIndex;
 		private Integer startTime;
+		private boolean progress;
+
+		public void setNodeIndex(Integer i) {
+			nodeIndex = i;
+		}
+
+		public boolean getProgress() {
+			return progress;
+		}
 
 		public Integer getJobID() {
 			return jobID;
@@ -96,6 +105,18 @@ public class JobInfo {
 			return reduces[tid].nodeIndex;
 		else
 			throw new IllegalArgumentException("Invalid task type");
+	}
+
+	public double checkProgress() {
+		int number = 0;
+		for (int i = 0; i < maps.length; i++)
+			if (maps[i].getProgress())
+				number++;
+		for (int i = 0; i < reduces.length; i++)
+			if (reduces[i].getProgress())
+				number++;
+
+		return (double)number/((double)maps.length + (double)reduces.length);
 	}
 
 

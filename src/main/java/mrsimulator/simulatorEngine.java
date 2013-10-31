@@ -106,6 +106,8 @@ public class SimulatorEngine {
     		Thread.sleep(2000);
     	}
 
+    	// find all threads finish, stop them
+
     	schedulerInstance.join();
     	networkInstance.join();
     	timer.join();

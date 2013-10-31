@@ -20,4 +20,26 @@ public class Jobtracker extends Thread {
 			throw new NullPointerException("Jobstracker is null");
 		return instance;
 	}
+
+ 
+	public void run() {
+		while (true) {
+            synchronized(tmsg) {
+                try {
+            	   tmsg.wait();
+                } catch (InterruptedException e) {
+            	   e.printStackTrace();
+                }
+            }
+            if (tmsg.getType().equals("JOB"))
+                slots.schedule(new JobAfterTimerDone(tmsg.getJobInfo()), tmsg.getDuration(), TimeUnit.SECONDS);
+            else if (tmsg.getType().equals("TASK")) {
+                Integer nodeIndex = tmsg.getNodeIndex();
+                networksimulator.occupyOneSlotAtNode(nodeIndex);
+                slots.schedule(new TaskAfterTimerDone(nodeIndex), tmsg.getDuration(), TimeUnit.SECONDS);
+            } else 
+                throw new IllegalArgumentException("Invalid TimerMessage Type");
+                
+        }
+	}
 }

@@ -41,6 +41,8 @@ public class Timer extends Thread {
             	   e.printStackTrace();
                 }
             }
+            if (tmsg.stop() == true)
+                break;
             if (tmsg.getType().equals("JOB"))
                 slots.schedule(new JobAfterTimerDone(tmsg.getJobInfo()), tmsg.getDuration(), TimeUnit.SECONDS);
             else if (tmsg.getType().equals("TASK")) {
@@ -63,6 +65,7 @@ public class Timer extends Thread {
 
         public void run() {
             scheduler.schedule(job, "MAP");
+            scheduler.notify();
         }
 	}
 

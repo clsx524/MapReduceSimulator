@@ -7,6 +7,8 @@ public class TimerMessage {
     private Integer taskID;
     private String taskType; // map or reduce
 
+    private boolean stopSign = false;
+
     private static TimerMessage msg = null;
 
     private TimerMessage() {
@@ -48,6 +50,10 @@ public class TimerMessage {
 
     public Integer getNodeIndex() {
         job.getNodeIndexWithTaskID(taskType, taskID);
+    }
+
+    public boolean stop() {
+        return stopSign;
     }
 
 }
