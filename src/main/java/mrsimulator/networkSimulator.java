@@ -1,7 +1,6 @@
 package mrsimulator;
 
 public class NetworkSimulator extends Thread {
-
 	public class SlotThread extends Thread {
 
 		private JobInfo.TaskInfo task;
@@ -10,43 +9,32 @@ public class NetworkSimulator extends Thread {
 			super();
 			task = t;
 		}
-
 		public void run() {
 			
 
 		}
 
-
 	}
-
 	private static NetworkSimulator instance = null;
-
 	private NetworkMessage nmsg = NetworkMessage.getInstance();
-
 	private Integer[] availableSlots = null;
 	private Integer[] nodeInfo = null;
-
 	private final TimerMessage msg;
-
 	private NetworkSimulator() {
 		msg = TimerMessage.getInstance();
 	}
-
 	public void setNode(Arraylist<Integer> nodes) {
 		nodeInfo = (Integer[]) nodes.toArray();
 		availableSlots = (Integer[]) nodes.toArray();
 	}
-
 	public void setTopology(Map<>) {
 		
 	}
-
 	public static getInstance() {
 		if (instance == null)
 			instance = new NetworkSimulator();
 		return instance;
 	}
-
 	public synchronized Integer[] getAllAvailableSlots() {
 		return availableSlots;
 	}
@@ -85,10 +73,12 @@ public class NetworkSimulator extends Thread {
 	}
 
 	public boolean hasAvailableSlots() {
-
+		for(Integer nodeSlot: availableSlots) {
+			if(nodeSlot > 0)
+				return true;
+		}
+		return false;
 	}
 	
-
-
 	
 }
