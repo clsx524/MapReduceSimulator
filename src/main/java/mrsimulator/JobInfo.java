@@ -9,7 +9,7 @@ public class JobInfo {
 		private Integer fileSize;
 		private Integer nodeIndex;
 		private Integer startTime;
-		private boolean progress;
+		private boolean progress = false;
 
 		public void setNodeIndex(Integer i) {
 			nodeIndex = i;
@@ -17,6 +17,10 @@ public class JobInfo {
 
 		public boolean getProgress() {
 			return progress;
+		}
+
+		public void setFinished() {
+			progress = true;
 		}
 
 		public Integer getJobID() {
@@ -71,6 +75,15 @@ public class JobInfo {
 
 	public Integer getJobID() {
 		return jobID;
+	}
+
+	public JobInfo.TaskInfo getTaskAt(Integer tid, String taskType) {
+		if (taskType.equals("MAP"))
+			return maps[tid];
+		else if (taskType.equals("REDUCE"))
+			return reduces[tid];
+		else
+			throw new IllegalArgumentException("Invalid task type");
 	}
 
 	public Long getArrivalTime() {

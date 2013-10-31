@@ -11,8 +11,10 @@ public class Timer extends Thread {
 	private final int corePoolSize;
 	private final ScheduledThreadPoolExecutor slots;
 	private final TimerMessage tmsg;
+    private final JobtrackerMessage jmsg;
     private final NetworkSimulator networksimulator;
     private final Scheduler scheduler;
+    private final Jobtracker jobtracker;
 	private static Timer timer = null;
 
     private Timer(int size) {
@@ -22,7 +24,9 @@ public class Timer extends Thread {
         slots = new ScheduledThreadPoolExecutor(corePoolSize);
         tmsg = TimerMessage.getInstance();  
         networksimulator = NetworkSimulator.getInstance();  
-        scheduler = SchedulerFactory.getInstance();    
+        scheduler = SchedulerFactory.getInstance(); 
+        jobtracker = Jobtracker.getInstance(); 
+        jmsg = JobtrackerMessage.getInstance();  
     }
 
     public static Timer getInstance(int size) {
@@ -48,7 +52,7 @@ public class Timer extends Thread {
             else if (tmsg.getType().equals("TASK")) {
                 Integer nodeIndex = tmsg.getNodeIndex();
                 networksimulator.occupyOneSlotAtNode(nodeIndex);
-                slots.schedule(new TaskAfterTimerDone(nodeIndex), tmsg.getDuration(), TimeUnit.SECONDS);
+                slots.schedule(new TaskAfterTimerDone(tmsg.getTask(), nodeIndex), tmsg.getDuration(), TimeUnit.SECONDS);
             } else 
                 throw new IllegalArgumentException("Invalid TimerMessage Type");
                 
@@ -72,13 +76,18 @@ public class Timer extends Thread {
     class TaskAfterTimerDone implements Runnable {
 
         private Integer nodeIndex;
+        private JobInfo.TaskInfo task;
 
-        public TaskAfterTimerDone(Integer ni) {
+        public TaskAfterTimerDone(JobInfo.TaskInfo t, Integer ni) {
+            task = t;
             nodeIndex = ni;
         }
 
         public void run() {
             networksimulator.addOneSlotAtNode(nodeIndex);
+            task.setFinished();
+            jmsg.setMessage(task);
+            jmsg.notify();
         }
     }
 

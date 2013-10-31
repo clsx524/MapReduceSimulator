@@ -25,8 +25,4 @@ public class NetworkMessage {
 	public boolean stop() {
 		return stopSign;
 	}
-
-
-
-
 }

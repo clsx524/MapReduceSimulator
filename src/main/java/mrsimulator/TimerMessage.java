@@ -41,6 +41,10 @@ public class TimerMessage {
         return job;
     }
 
+    public JobInfo.TaskInfo getTask() {
+        return job.getTaskAt(taskID, taskType);
+    }
+
     public long getDuration() {
         if (type.equals("JOB"))
             return job.getArrivalTime();
