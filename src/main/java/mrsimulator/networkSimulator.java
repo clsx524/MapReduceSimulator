@@ -11,7 +11,6 @@ public class NetworkSimulator extends Thread {
 		}
 		public void run() {
 			
-
 		}
 
 	}

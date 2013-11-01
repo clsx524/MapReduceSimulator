@@ -8,13 +8,10 @@ public class TimerMessage {
     private String taskType; // map or reduce
 
     private boolean stopSign = false;
-
     private static TimerMessage msg = null;
-
     private TimerMessage() {
         job = null;
     }
-
     public static TimerMessage getInstance() {
         if (msg == null)
             msg = new TimerMessage();
