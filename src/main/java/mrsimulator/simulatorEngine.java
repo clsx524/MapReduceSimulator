@@ -6,64 +6,45 @@ public class SimulatorEngine {
 	private BufferedReader inputReader = null;
 	private ArrayList<String> allJobs = new ArrayList<String>();
 	private Iterable<String> jobIterator = null;
-
 	private Jobtracker jobtrackerInstance = null;
-
 	private Scheduler schedulerInstance = null;
-
 	private NetworkSimulator networkInstance = null;
-
 	private Timer timer = null;
-
 	private Configure config = null;
-
-	private Random rd = new Random(System.currentTimeMillis());
-
-	public simulatorEngine() {
-		inputReader = new BufferedReader(new FileReader(inputPath));
-
 	private TimerMessage tmsg = null;
-
+	private Random rd = new Random(System.currentTimeMillis());
+	//public simulatorEngine() {
+		//inputReader = new BufferedReader(new FileReader(inputPath));
 	public SimulatorEngine() {
 		init();
 	}
-
 	public SimulatorEngine(String path) {
 		inputPath = path;
 		init();
 	}
-
 	private void init() {
 		inputReader = new BufferedReader(new FileReader(inputPath));
 		readInputFile();
-
 		readConfig();
-
 		tmsg = TimerMessage.getInstance();
-
 		networkInstance = NetworkSimulator.getInstance();
+		// the number of maps and reduces
 		networkInstance.setNode(config.get("nodes"));
 		networkInstance.setTopology(config.get("topology"));
-
 		schedulerInstance = SchedulerFactory.newInstance(config.get("schedulerType"));
-
 		timer = Timer.getInstance(config.get("corePoolSize"));
-
 		jobtrackerInstance = Jobtracker.newInstance(allJobs);
-
 		networkInstance.start();
 		schedulerInstance.start();
 		timer.start();	
 		jobtrackerInstance.start();	
 	}
-
 	private void readConfig() {
 
 
 
 
 	}
-
 	private void readInputFile() {
 		String line = null;
 		while ((line = inputReader.readLine()) != null) {
@@ -72,7 +53,6 @@ public class SimulatorEngine {
         inputReader.close();
         jobIterator = allJobs.iterator();
 	}
-
 	private JobInfo getOneJob() {
 		if (jobIterator.hasNext()) {
 			String[] strs = jobIterator.next().split("\\t");
@@ -82,6 +62,7 @@ public class SimulatorEngine {
 				inputNode = rd.nextLong() % networkInstance.getNodeNumber();
 			else
 				inputNode = job.getInputNode() % networkInstance.getNodeNumber();
+			// file repilca
 			job.setInputNode(inputNode);
 			ArrayList<Integer> prefs = getPreference(inputNode);
 			job.setPrefs(prefs);
@@ -105,9 +86,7 @@ public class SimulatorEngine {
     		tmsg.notify();
     		Thread.sleep(2000);
     	}
-
     	// find all threads finish, stop them
-
     	schedulerInstance.join();
     	networkInstance.join();
     	timer.join();

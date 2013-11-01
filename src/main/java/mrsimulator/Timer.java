@@ -31,7 +31,7 @@ public class Timer extends Thread {
 
     public static Timer getInstance(int size) {
         if (timer == null)
-            timer = new Timer(int size);
+            timer = new Timer(size);
         return timer;
     } 
 
