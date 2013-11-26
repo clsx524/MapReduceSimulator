@@ -1,20 +1,15 @@
 package mrsimulator;
 
 public class NetworkSimulator extends Thread {
-<<<<<<< HEAD
 
 	public class SlotsLeft implements Comparable<SlotsLeft>{
 		public int slotNumber;
 		public int left;
-=======
-	public class SlotThread extends Thread {
->>>>>>> 795b53dfe06357640b44203031dc0e2e1650ce93
 
 		public SlotsLeft(int sn, int l) {
 			slotNumber = sn;
 			left = l;
 		}
-<<<<<<< HEAD
 
 		@Override
     	public int compareTo(SlotsLeft other){
@@ -62,43 +57,16 @@ public class NetworkSimulator extends Thread {
 			node2Left.put(i, sl);
 		}
 	}
-=======
-		public void run() {
-			
-		}
-
-	}
-	private static NetworkSimulator instance = null;
-	private NetworkMessage nmsg = NetworkMessage.getInstance();
-	private Integer[] availableSlots = null;
-	private Integer[] nodeInfo = null;
-	private final TimerMessage msg;
-	private NetworkSimulator() {
-		msg = TimerMessage.getInstance();
-	}
-	public void setNode(Arraylist<Integer> nodes) {
-		nodeInfo = (Integer[]) nodes.toArray();
-		availableSlots = (Integer[]) nodes.toArray();
-	}
-	public void setTopology(Map<>) {
-		
-	}
->>>>>>> 795b53dfe06357640b44203031dc0e2e1650ce93
 	public static getInstance() {
 		if (instance == null)
 			throw new NullPointerException("network is null");
 		return instance;
 	}
-<<<<<<< HEAD
 
 	public static newInstance(Semaphore net) {
 		if (instance == null)
 			instance = new NetworkSimulator(net);
 		return instance;
-=======
-	public synchronized Integer[] getAllAvailableSlots() {
-		return availableSlots;
->>>>>>> 795b53dfe06357640b44203031dc0e2e1650ce93
 	}
 
 	public synchronized Long getNodeNumber() {
@@ -146,19 +114,8 @@ public class NetworkSimulator extends Thread {
 	}
 
 	public boolean hasAvailableSlots() {
-<<<<<<< HEAD
 		if (!queue.peek() && queue.peek().left > 0)
 			return true;
 		return false;
 	}
-=======
-		for(Integer nodeSlot: availableSlots) {
-			if(nodeSlot > 0)
-				return true;
-		}
-		return false;
-	}
-	
-	
->>>>>>> 795b53dfe06357640b44203031dc0e2e1650ce93
 }
