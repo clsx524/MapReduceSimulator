@@ -15,11 +15,9 @@ public class NetworkSimulator extends Thread {
     	public int compareTo(SlotsLeft other){
         	return (left > other.left ? -1 : (left == other.left ? 0 : 1));
     	}
+
 	}
-
 	private static NetworkSimulator instance = null;
-
-	private NetworkMessage nmsg = NetworkMessage.getInstance();
 
 	//private Map<Integer, Set<Integer>> node2Task = new HashMap<Integer, Set<Integer>>();
 	private ConcurrentMap<Integer, SlotsLeft> node2Left = new ConcurrentHashMap<Integer, SlotsLeft>();
@@ -59,7 +57,6 @@ public class NetworkSimulator extends Thread {
 			node2Left.put(i, sl);
 		}
 	}
-
 	public static getInstance() {
 		if (instance == null)
 			throw new NullPointerException("network is null");
@@ -121,5 +118,4 @@ public class NetworkSimulator extends Thread {
 			return true;
 		return false;
 	}
-	
 }

@@ -8,10 +8,9 @@ public class SchedulerFactory {
 		if (type.equals("FIFOScheduler"))
 			schedulerInstance = new FIFOScheduler();
 		else if (type.equals(""))
-
-
 		else
 			throw new IllegalArgumentException("Invalid Scheduler Type");
+		return schedulerInstance;
 	}
 
 	public static Scheduler getInstance() {

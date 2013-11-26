@@ -4,15 +4,13 @@ public class SimulatorEngine {
 
 	private String inputPath = "datasets/FB-2009_samples_24_times_1hr_0_first50jobs.tsv";
 	private BufferedReader inputReader = null;
+
 	private ArrayList<JobInfo> allJobs = new ArrayList<JobInfo>();
 	private Iterable<JobInfo> jobIterator = null;
 
 	private Jobtracker jobtrackerInstance = null;
-
 	private Scheduler schedulerInstance = null;
-
 	private NetworkSimulator networkInstance = null;
-
 	private Timer timer = null;
 
 	private Topology topology = null;
@@ -23,16 +21,13 @@ public class SimulatorEngine {
 
 	private Semaphore netSemaphore = null;
 
-
 	public SimulatorEngine() {
 		init();
 	}
-
 	public SimulatorEngine(String path) {
 		inputPath = path;
 		init();
 	}
-
 	private void init() {
 		/************* Read input file *************/
 		inputReader = new BufferedReader(new FileReader(inputPath));
@@ -63,7 +58,6 @@ public class SimulatorEngine {
 		networkInstance.start();
 		schedulerInstance.start();
 	}
-
 	private void readInputFile() {
 		String line = null;
 		while ((line = inputReader.readLine()) != null)
@@ -92,7 +86,6 @@ public class SimulatorEngine {
     		timer.scheduleJob(job.next().maps, "M");
     		Thread.sleep(20000);
     	}
-
     	// find all threads finish, stop them
     	timer.join();
 
