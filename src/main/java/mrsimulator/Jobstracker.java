@@ -34,7 +34,6 @@ public class Jobtracker extends Thread {
             	   e.printStackTrace();
                 }
             }
-            
         }
 	}
 }

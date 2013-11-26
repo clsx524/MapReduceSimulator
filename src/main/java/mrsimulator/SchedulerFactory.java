@@ -6,7 +6,7 @@ public class SchedulerFactory {
 
 	public static Scheduler newInstance(String type) {
 		if (type.equals("FIFOScheduler"))
-			schedulerInstance = FIFOScheduler.getInstance();
+			schedulerInstance = new FIFOScheduler();
 		else if (type.equals(""))
 
 

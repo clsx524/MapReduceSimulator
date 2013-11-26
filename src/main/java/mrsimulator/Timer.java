@@ -1,93 +1,97 @@
 package mrsimulator;
 
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
-public class Timer extends Thread {
-	private final int corePoolSize;
-	private final ScheduledThreadPoolExecutor slots;
-	private final TimerMessage tmsg;
-    private final JobtrackerMessage jmsg;
-    private final NetworkSimulator networksimulator;
-    private final Scheduler scheduler;
-    private final Jobtracker jobtracker;
-	private static Timer timer = null;
+public class Timer {
+	private final Long corePoolSize;
+	private final ScheduledThreadPoolExecutor timerQueue;
+    private static Timer timer = null;
 
-    private Timer(int size) {
-        if (size < 0)
+    private final NetworkSimulator networksimulator;
+
+    private Semaphore netSemaphore = null;
+    
+    private final Scheduler scheduler;
+	
+    private Timer(Long size, Semaphore ns) {
+        if (size < 0L)
             corePoolSize = 10000;
         corePoolSize = size;
-        slots = new ScheduledThreadPoolExecutor(corePoolSize);
-        tmsg = TimerMessage.getInstance();  
+        timerQueue = new ScheduledThreadPoolExecutor(corePoolSize); 
         networksimulator = NetworkSimulator.getInstance();  
-        scheduler = SchedulerFactory.getInstance(); 
-        jobtracker = Jobtracker.getInstance(); 
-        jmsg = JobtrackerMessage.getInstance();  
+        netSemaphore = ns;
+        scheduler = SchedulerFactory.getInstance();  
     }
 
-    public static Timer getInstance(int size) {
+    public static Timer getInstance() {
         if (timer == null)
-            timer = new Timer(int size);
+            throw new NullPointerException("timer is null");
         return timer;
     } 
 
-    // wait until notify by networksimulator
-	public void run() {
-        while (true) {
-            synchronized(tmsg) {
-                try {
-            	   tmsg.wait();
-                } catch (InterruptedException e) {
-            	   e.printStackTrace();
-                }
-            }
-            if (tmsg.stop() == true)
-                break;
-            if (tmsg.getType().equals("JOB"))
-                slots.schedule(new JobAfterTimerDone(tmsg.getJobInfo()), tmsg.getDuration(), TimeUnit.SECONDS);
-            else if (tmsg.getType().equals("TASK")) {
-                Integer nodeIndex = tmsg.getNodeIndex();
-                networksimulator.occupyOneSlotAtNode(nodeIndex);
-                slots.schedule(new TaskAfterTimerDone(tmsg.getTask(), nodeIndex), tmsg.getDuration(), TimeUnit.SECONDS);
-            } else 
-                throw new IllegalArgumentException("Invalid TimerMessage Type");
-                
+    public static Timer newInstance(Long size, Semaphore ns) {
+        if (timer == null)
+            timer = new Timer(size, ns);
+        return timer;        
+    }
+
+	public void scheduleJob(JobInfo job, String type) {
+        timerQueue.schedule(new JobAfterTimerDone(job, type), job.arrivalTime, TimeUnit.SECONDS);
+    }
+
+    public void scheduleTask(JobInfo.TaskInfo task) {
+        networksimulator.occupyOneSlotAtNode(task.nodeIndex);
+        task.startTime = System.currentTimeMillis();
+        timerQueue.schedule(new TaskAfterTimerDone(task), task.duration, TimeUnit.SECONDS);
+    }
+
+    public boolean join() {
+        timerQueue.shutdown();
+        while(!timerQueue.isTerminated()){
+            //wait for all tasks to finish
         }
+        System.out.println("Finished all threads");
     }
 
 	class JobAfterTimerDone implements Runnable {
 
         private JobInfo job;
+        private String type;
 
-        public JobAfterTimerDone(JobInfo j) {
+        public JobAfterTimerDone(JobInfo j, String t) {
             job = j;
+            type = t;
         }
 
         public void run() {
-            scheduler.schedule(job, "MAP");
-            scheduler.notify();
+            scheduler.schedule(job, type);
         }
 	}
 
     class TaskAfterTimerDone implements Runnable {
 
-        private Integer nodeIndex;
         private JobInfo.TaskInfo task;
 
-        public TaskAfterTimerDone(JobInfo.TaskInfo t, Integer ni) {
+        public TaskAfterTimerDone(JobInfo.TaskInfo t) {
             task = t;
-            nodeIndex = ni;
         }
 
         public void run() {
-            networksimulator.addOneSlotAtNode(nodeIndex);
-            task.setFinished();
-            jmsg.setMessage(task);
-            jmsg.notify();
+            networksimulator.addOneSlotAtNode(task.nodeIndex);
+            task.progress = true;
+            task.endTime = System.currentTimeMillis();
+            if (task.taskType == true) 
+                task.mapProgress += 1;
+            else {
+                task.reduceProgress += 1;
+                task.setJobEndTime();
+            }
+                
+            netSemaphore.take();
         }
     }
 
