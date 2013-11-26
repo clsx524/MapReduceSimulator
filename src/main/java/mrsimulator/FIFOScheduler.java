@@ -1,6 +1,10 @@
 package mrsimulator;
 
-public class FIFOScheduler implements Scheduler extends Thread {
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+public class FIFOScheduler extends Thread implements Scheduler  {
 
 	// private class StartTimeComparator implements Comparator<JobInfo.TaskInfo> {
 	// 	public int compare(JobInfo.TaskInfo j1, JobInfo.TaskInfo j2) {
@@ -13,44 +17,59 @@ public class FIFOScheduler implements Scheduler extends Thread {
 
 	private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
 
-	private Timer timer = timer.getInstance();
+	private Timer timer = Timer.getInstance();
 
 	private boolean stopSign = false;
 
 	private JobInfo.TaskInfo curr = null;
 
-	public int schedule(JobInfo.TaskInfo[] tasks) {
-		if (job == null)
+	public void schedule(JobInfo.TaskInfo[] tasks) {
+		if (tasks == null)
             throw new NullPointerException("job is null");
 
        	for (JobInfo.TaskInfo task : tasks)
-        	queue.put(task);
+        	queue.offer(task);
+	}
+
+	public void threadStart() {
+		this.start();
+	}
+
+	public void threadJoin() {
+		try {
+			this.join();
+		} catch (InterruptedException ie) {
+    		System.out.println("Exception thrown  :" + ie);
+    	}
+	}
+
+	public void threadStop() {
+		stopSign = true;
 	}
 
 	public void run() {
-		while (true) {
-			if (stopSign == true)
-          		break;
-
-			if (networkInstance.hasAvailableSlots() && queue.peek() != null)
+		ArrayList<Integer> prefs = null;
+		while (!stopSign) {
+			if (networkInstance.hasAvailableSlots() && queue.peek() != null) {
                 curr = queue.poll();
-				Integer[] availableSlots = networkInstance.getAllAvailableSlots();
-				ArrayList<Integer> prefs = curr.getPrefs(); // assume it not empty
+				if (curr.taskType == true)
+					prefs = curr.getMapPrefs();
+				else
+				 	prefs = curr.getReducePrefs(); // assume it not empty
 
 				boolean found = false;
 				for (Integer i : prefs)
 					if (networkInstance.checkSlotsAtNode(i)) {
-						curr.nodeIndex(i);
+						curr.nodeIndex = i;
 						found = true;
 						break;								
 					}
 				if (!found) {
 					int r = networkInstance.pickUpOneSlotRandom();
-					curr.setNodeIndex(r);
+					curr.nodeIndex = r;
 				}
 				timer.scheduleTask(curr);
 			}
 		}
 	}
-
 }

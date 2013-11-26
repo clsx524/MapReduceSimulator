@@ -1,10 +1,13 @@
 package mrsimulator;
 
+import java.util.ArrayList;
+import java.lang.Math;
+
 public class JobInfo {
 
 	public class TaskInfo {
 
-		public Double duration = -1.0;
+		public long duration = -1L;
 		public Integer fileSize = -1; // bytes
 		public Integer nodeIndex = -1;
 		public long startTime = -1;
@@ -12,42 +15,65 @@ public class JobInfo {
 		public boolean progress = false;
 		public boolean taskType = true; // true MAP; false REDUCE
 
-		public Double getMapNumber() {
+		public Integer getMapNumber() {
 			return mapNumber;
 		}
-		public Double getReduceNumber() {
-			return reduceNumber;
-		}
-		public Double getMapProgress() {
+		// public Double getReduceNumber() {
+		// 	return reduceNumber;
+		// }
+		public Integer getMapProgress() {
 			return mapProgress;
 		}
-		public Double getReduceProgress() {
+		public Integer getReduceProgress() {
 			return reduceProgress;
+		}
+		public void setMapProgress() {
+			mapProgress++;
+		}		
+		public void setReduceProgress() {
+			reduceProgress++;
 		}	
-		public JobInfo.TaskInfo getReduces() {
+		public TaskInfo[] getReduces() {
 			return reduces;
 		}	
 		public JobInfo getJob() {
 			return JobInfo.this;
 		}
+		public int getTotalTasksNumber() {
+			return mapNumber + reduceNumber;
+		}
 		public void setJobEndTime() {
-			return JobInfo.this.endTime = endTime;
+			JobInfo.this.endTime = endTime;
+		}
+		public boolean isFinished() {
+			if (mapNumber == mapProgress && reduceNumber == reduceProgress)
+				return true;
+			return false;
+		}
+		public void setDuration(double d) {
+			duration = (long) d;
+		}
+		public ArrayList<Integer> getMapPrefs() {
+			return mapPrefs;
+		}
+		public ArrayList<Integer> getReducePrefs() {
+			return reducePrefs;
 		}
 	}
 
 	public Integer jobID = -1;
 	public Long arrivalTime = -1L;
-	public Integer gapTime = -1L;
+	public Integer gapTime = -1;
 	public Long mapInputBytes = -1L;
 	public Long shuffleBytes = -1L;
 	public Long reduceOutputBytes = -1L;
-	public Long inputNode = -1L; 
+	//public Long inputNode = -1L; 
 
-	public Double mapNumber;
-	public Double reduceNumber;
+	public Integer mapNumber;
+	public Integer reduceNumber;
 
-	public Double mapProgress = 0;
-	public Double reduceProgress = 0;
+	public Integer mapProgress = 0;
+	public Integer reduceProgress = 0;
 
 	public long startTime;
 	public long endTime;
@@ -68,47 +94,47 @@ public class JobInfo {
 		shuffleBytes = Long.parseLong(strs[4]);
 		reduceOutputBytes = Long.parseLong(strs[5]);
 
-		if (strs.length > 6) 
-			inputNode = Long.parseLong(strs[6].substring(9));
+		// if (strs.length > 6) 
+		// 	inputNode = Long.parseLong(strs[6].substring(9));
 	}
 
-	public void initTasks(Integer blockSize) {
+	public void initTasks(Long blockSize) {
 		if (mapNumber % blockSize == 0)
-			mapNumber = mapInputBytes / blockSize;
+			mapNumber = (int) (mapInputBytes / blockSize);
 		else
-			mapNumber = mapInputBytes / blockSize + 1L;
+			mapNumber = (int) (mapInputBytes / blockSize + 1);
 
 		if (reduceOutputBytes % blockSize == 0)
-			reduceOutputBytes = reduceOutputBytes / blockSize;
+			reduceNumber = (int) (reduceOutputBytes / blockSize);
 		else
-			reduceOutputBytes = reduceOutputBytes / blockSize + 1L;
+			reduceNumber = (int) (reduceOutputBytes / blockSize + 1);
 
-		maps = new JobInfo.TaskInfo[mapNumber];
-		reduces = new JobInfo.TaskInfo[reduceNumber];
+		maps = new JobInfo.TaskInfo[mapNumber.intValue()];
+		reduces = new JobInfo.TaskInfo[reduceNumber.intValue()];
 
-		int mapBytes = mapInputBytes;
+		Long mapBytes = mapInputBytes;
 		for (int i = 0; i < mapNumber; i++) {
 			maps[i].taskType = true;
 			if (mapBytes > blockSize) {
-				maps[i].duration = blockSize.toDouble() / Configure.execSpeed + blockSize.toDouble() / Configure.ioSpeed;
-				maps[i].fileSize = blockSize;
+				maps[i].setDuration((blockSize.doubleValue() / Configure.execSpeed + blockSize.doubleValue() / Configure.ioSpeed) * Math.pow(10.0, 6.0));
+				maps[i].fileSize = blockSize.intValue();
 				mapBytes -= blockSize;				
 			} else {
-				maps[i].duration = mapBytes.toDouble() / Configure.execSpeed + mapBytes.toDouble() / Configure.ioSpeed;
-				maps[i].fileSize = mapBytes;				
+				maps[i].setDuration((mapBytes.doubleValue() / Configure.execSpeed + mapBytes.doubleValue() / Configure.ioSpeed) * Math.pow(10.0, 6.0));
+				maps[i].fileSize = mapBytes.intValue();				
 			}
 		}
 
-		int reduceBytes = reduceOutputBytes;
+		Long reduceBytes = reduceOutputBytes;
 		for (int i = 0; i < mapNumber; i++) {
 			reduces[i].taskType = false;
 			if (reduceBytes > blockSize) {
-				reduces[i].duration = blockSize.toDouble() / Configure.execSpeed + shuffleBytes.toDouble() / Configure.ioSpeed / reduceNumber;
-				reduces[i].fileSize = blockSize;
+				reduces[i].setDuration((blockSize.doubleValue() / Configure.execSpeed + shuffleBytes.doubleValue() / Configure.ioSpeed / reduceNumber) * Math.pow(10.0, 6.0));
+				reduces[i].fileSize = blockSize.intValue();
 				mapBytes -= blockSize;				
 			} else {
-				reduces[i].duration = reduceBytes.toDouble() / Configure.execSpeed + shuffleBytes.toDouble() / Configure.ioSpeed / reduceNumber;
-				reduces[i].fileSize = reduceBytes;				
+				reduces[i].setDuration((reduceBytes.doubleValue() / Configure.execSpeed + shuffleBytes.doubleValue() / Configure.ioSpeed / reduceNumber) * Math.pow(10.0, 6.0));
+				reduces[i].fileSize = reduceBytes.intValue();				
 			}
 		}
 	}
@@ -122,44 +148,40 @@ public class JobInfo {
 			throw new IllegalArgumentException("Invalid task type");
 	}
 
-	public Integer getDurationWithTaskID(String taskType, Integer tid) {
-		if (taskType.equals("MAP"))
-			return maps[tid].duration;
-		else if (taskType.equals("REDUCE"))
-			return reduces[tid].duration;
-		else
-			throw new IllegalArgumentException("Invalid task type");
-	} 
+	// public long getDurationWithTaskID(String taskType, Integer tid) {
+	// 	if (taskType.equals("MAP"))
+	// 		return maps[tid].duration;
+	// 	else if (taskType.equals("REDUCE"))
+	// 		return reduces[tid].duration;
+	// 	else
+	// 		throw new IllegalArgumentException("Invalid task type");
+	// } 
 
-	public Integer getNodeIndexWithTaskID(String taskType, Integer tid) {
-		if (taskType.equals("MAP"))
-			return maps[tid].nodeIndex;
-		else if (taskType.equals("REDUCE"))
-			return reduces[tid].nodeIndex;
-		else
-			throw new IllegalArgumentException("Invalid task type");
-	}
+	// public Integer getNodeIndexWithTaskID(String taskType, Integer tid) {
+	// 	if (taskType.equals("MAP"))
+	// 		return maps[tid].nodeIndex;
+	// 	else if (taskType.equals("REDUCE"))
+	// 		return reduces[tid].nodeIndex;
+	// 	else
+	// 		throw new IllegalArgumentException("Invalid task type");
+	// }
 
-	public double checkProgress() {
-		int number = 0;
-		for (int i = 0; i < maps.length; i++)
-			if (maps[i].getProgress())
-				number++;
-		for (int i = 0; i < reduces.length; i++)
-			if (reduces[i].getProgress())
-				number++;
+//	public double checkProgress() {
+//		int number = 0;
+//		for (int i = 0; i < maps.length; i++)
+//			if (maps[i].progress)
+//				number++;
+//		for (int i = 0; i < reduces.length; i++)
+//			if (reduces[i].getProgress())
+//				number++;
+//
+//		return (double)number/((double)maps.length + (double)reduces.length);
+//	}
 
-		return (double)number/((double)maps.length + (double)reduces.length);
-	}
 
-	public boolean isFinished() {
-		if (mapNumber == mapProgress && reduceNumber == reduceProgress)
-			return true;
-		return false;
-	}
 
 	public String jobToString() {
-		return "Job: " + job.jobID + " " + startTime + " " + endTime;
+		return "Job: " + jobID + " " + startTime + " " + endTime;
 	}
 
 	public String mapTaskToString(int i) {

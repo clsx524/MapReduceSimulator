@@ -1,5 +1,13 @@
 package mrsimulator;
 
+import java.util.Queue;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.Semaphore;
+
 public class NetworkSimulator extends Thread {
 
 	public class SlotsLeft implements Comparable<SlotsLeft>{
@@ -27,6 +35,8 @@ public class NetworkSimulator extends Thread {
 	private int slotsPerNode;
 	private int machines;
 
+	private long finished = 0L;
+
 	private Scheduler SchedulerInstance = SchedulerFactory.getInstance();
 
 	private Random rd = new Random(System.currentTimeMillis());
@@ -41,6 +51,8 @@ public class NetworkSimulator extends Thread {
 
 	private JobInfo.TaskInfo curr = null;
 
+	private boolean stopSign = false;
+
 	private NetworkSimulator(Semaphore net) {
 		netSemaphore = net;
 	}
@@ -49,7 +61,7 @@ public class NetworkSimulator extends Thread {
 		machinesPerRack = topology.machinesPerRack;
 		racks = topology.racks;
 		slotsPerNode = spn;
-		machines = machinesPerRack * nodeInfo
+		machines = machinesPerRack * racks;
 		// totalSlots = machines * slotsPerNode;
 		// availableSlots = totalSlots;
 		for (int i = 0; i < machines; i++) {
@@ -57,41 +69,46 @@ public class NetworkSimulator extends Thread {
 			node2Left.put(i, sl);
 		}
 	}
-	public static getInstance() {
+	public static NetworkSimulator getInstance() {
 		if (instance == null)
 			throw new NullPointerException("network is null");
 		return instance;
 	}
 
-	public static newInstance(Semaphore net) {
+	public static NetworkSimulator newInstance(Semaphore net) {
 		if (instance == null)
 			instance = new NetworkSimulator(net);
 		return instance;
 	}
 
-	public synchronized Long getNodeNumber() {
+	public synchronized int getNodeNumber() {
 		return machinesPerRack * racks;
 	}
 
 	public void notifyFinish(JobInfo.TaskInfo task) {
-		checkProgress.put(task);
+		checkProgress.offer(task);
 	}
 
 	public void run() {
-        while (true) {
+        while (!stopSign) {
             netSemaphore.release();
 
             curr = checkProgress.poll();
-            if (curr.isFinished())
+            if (curr.isFinished()) {
+            	finished++;
             	profile.print(curr.getJob());
-           	else if (curr.getMapProgress() / curr.getMapNumber() > Configure.reduceStartPercentage)
+            	if (finished == Configure.total) {
+            		SchedulerInstance.threadStop();
+            		stopSign = true;
+            	}
+            } else if (curr.getMapProgress() / curr.getMapNumber() > Configure.reduceStartPercentage)
            		SchedulerInstance.schedule(curr.getReduces());
         }
 	}
 
 	public synchronized int pickUpOneSlotRandom() {
-		if (!queue.peek() && queue.peek().left > 0)
-			return queue.peek.slotNumber;
+		if (queue.peek() != null && queue.peek().left > 0)
+			return queue.peek().slotNumber;
 		return -1;
 	}
 
@@ -101,20 +118,20 @@ public class NetworkSimulator extends Thread {
 		return false;
 	}
 
-	public synchronized void occupyOneSlotAtNode(Integer nodeIndex) {
+	public synchronized void occupyOneSlotAtNode(Integer index) {
 		if (node2Left.get(index).left < 1)
 			throw new IllegalArgumentException("Out of free slots to use");
 		node2Left.get(index).left--;			
 	}
 
-	public synchronized void addOneSlotAtNode(Integer nodeIndex) {
+	public synchronized void addOneSlotAtNode(Integer index) {
 		if (node2Left.get(index).left + 1 > slotsPerNode)
 			throw new IllegalArgumentException("Out of bound of total slots");
 		node2Left.get(index).left++;
 	}
 
 	public boolean hasAvailableSlots() {
-		if (!queue.peek() && queue.peek().left > 0)
+		if (queue.peek() != null && queue.peek().left > 0)
 			return true;
 		return false;
 	}

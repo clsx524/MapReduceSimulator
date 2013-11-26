@@ -1,6 +1,6 @@
 package mrsimulator;
 
-import java.io.*
+import java.io.*;
 
 class Profiler {
 
@@ -9,7 +9,13 @@ class Profiler {
 
 	public Profiler(String dir, String name) {
 		directory = dir;
-		FileWriter fw = new FileWriter(new File(name));
+		FileWriter fw = null;
+		try {
+			fw = new FileWriter(new File(name));
+		} catch (IOException io) {
+			System.out.println("Exception thrown  :" + io);
+		}
+		
 		pw = new PrintWriter(fw, true);
 	}
 
@@ -29,13 +35,17 @@ class Profiler {
 		pw.println(str1 + " " + str2);
 	}
 
+	public void print2ln(int str1, int str2) {
+		pw.println(str1 + " " + str2);
+	}
+
 	public void print(JobInfo job) {
 		pw.println(job.jobToString());
-		for (int i = 0; i < jobs.mapNumber; i++)
+		for (int i = 0; i < job.mapNumber; i++)
 			pw.println(job.mapTaskToString(i));
-		for (int i = 0; i < jobs.reduceNumber; i++)
+		for (int i = 0; i < job.reduceNumber; i++)
 			pw.println(job.reduceTaskToString(i));
-		pw.nextLine();
+		this.nextLine();
 	}
 
 }

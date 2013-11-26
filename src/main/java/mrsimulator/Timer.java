@@ -3,12 +3,13 @@ package mrsimulator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 
 public class Timer {
-	private final Long corePoolSize;
-	private final ScheduledThreadPoolExecutor timerQueue;
+    private final Long corePoolSize;
+    private final ScheduledThreadPoolExecutor timerQueue;
     private static Timer timer = null;
 
     private final NetworkSimulator networksimulator;
@@ -16,12 +17,13 @@ public class Timer {
     private Semaphore netSemaphore = null;
     
     private final Scheduler scheduler;
-	
+    
     private Timer(Long size, Semaphore ns) {
         if (size < 0L)
-            corePoolSize = 10000;
-        corePoolSize = size;
-        timerQueue = new ScheduledThreadPoolExecutor(corePoolSize); 
+            corePoolSize = 10000L;
+        else
+            corePoolSize = size;
+        timerQueue = new ScheduledThreadPoolExecutor(corePoolSize.intValue()); 
         networksimulator = NetworkSimulator.getInstance();  
         netSemaphore = ns;
         scheduler = SchedulerFactory.getInstance();  
@@ -39,8 +41,8 @@ public class Timer {
         return timer;        
     }
 
-	public void scheduleJob(JobInfo job, String type) {
-        timerQueue.schedule(new JobAfterTimerDone(job, type), job.arrivalTime, TimeUnit.SECONDS);
+    public void scheduleJob(JobInfo job) {
+        timerQueue.schedule(new JobAfterTimerDone(job), job.arrivalTime, TimeUnit.SECONDS);
     }
 
     public void scheduleTask(JobInfo.TaskInfo task) {
@@ -49,7 +51,7 @@ public class Timer {
         timerQueue.schedule(new TaskAfterTimerDone(task), task.duration, TimeUnit.SECONDS);
     }
 
-    public boolean join() {
+    public void join() {
         timerQueue.shutdown();
         while(!timerQueue.isTerminated()){
             //wait for all tasks to finish
@@ -57,20 +59,18 @@ public class Timer {
         System.out.println("Finished all threads");
     }
 
-	class JobAfterTimerDone implements Runnable {
+    class JobAfterTimerDone implements Runnable {
 
         private JobInfo job;
-        private String type;
 
-        public JobAfterTimerDone(JobInfo j, String t) {
+        public JobAfterTimerDone(JobInfo j) {
             job = j;
-            type = t;
         }
 
         public void run() {
-            scheduler.schedule(job, type);
+            scheduler.schedule(job.maps);
         }
-	}
+    }
 
     class TaskAfterTimerDone implements Runnable {
 
@@ -85,13 +85,18 @@ public class Timer {
             task.progress = true;
             task.endTime = System.currentTimeMillis();
             if (task.taskType == true) 
-                task.mapProgress += 1;
+                task.setMapProgress();
             else {
-                task.reduceProgress += 1;
+                task.setReduceProgress();
                 task.setJobEndTime();
             }
                 
-            netSemaphore.take();
+            try {
+                netSemaphore.acquire();
+            } catch (InterruptedException ie) {
+                System.out.println("Exception thrown  :" + ie);
+            }
+            
         }
     }
 

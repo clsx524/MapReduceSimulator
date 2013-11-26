@@ -1,14 +1,21 @@
 package mrsimulator;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.concurrent.Semaphore;
+
 public class SimulatorEngine {
 
 	private String inputPath = "datasets/FB-2009_samples_24_times_1hr_0_first50jobs.tsv";
 	private BufferedReader inputReader = null;
 
 	private ArrayList<JobInfo> allJobs = new ArrayList<JobInfo>();
-	private Iterable<JobInfo> jobIterator = null;
 
-	private Jobtracker jobtrackerInstance = null;
 	private Scheduler schedulerInstance = null;
 	private NetworkSimulator networkInstance = null;
 	private Timer timer = null;
@@ -30,7 +37,11 @@ public class SimulatorEngine {
 	}
 	private void init() {
 		/************* Read input file *************/
-		inputReader = new BufferedReader(new FileReader(inputPath));
+		try {
+			inputReader = new BufferedReader(new FileReader(inputPath));
+		} catch (FileNotFoundException io) {
+			System.out.println("Exception thrown  :" + io);
+		}
 		readInputFile();
 
 		/************* Init Semaphore *************/
@@ -47,52 +58,56 @@ public class SimulatorEngine {
 		networkInstance.setTopology(topology, Configure.slotsPerNode);
 
 		/************* Init distributed file system *************/
-		dfs = DistributedFileSystem.newInstance(Configure.replica, Configure.blockSize, Configure.execSpeed, Configure.ioSpeed);
+		dfs = DistributedFileSystem.newInstance(Configure.replica, Configure.blockSize);
 		dfs.updatePrefs(allJobs);
 		dfs.updateTaskNumber(allJobs);
 
 		/************* Init timer *************/
-		timer = Timer.getInstance(Configure.corePoolSize);
+		timer = Timer.newInstance(Configure.corePoolSize, netSemaphore);
 
 		/************* Init all services *************/
 		networkInstance.start();
-		schedulerInstance.start();
+		schedulerInstance.threadStart();
 	}
 	private void readInputFile() {
 		String line = null;
-		while ((line = inputReader.readLine()) != null)
-           	allJobs.add(parseJob(line));
-       	
-        inputReader.close();
-        jobIterator = allJobs.iterator();
+		try {
+			while ((line = inputReader.readLine()) != null)
+           		allJobs.add(parseJob(line));
+        	inputReader.close();
+		} catch (IOException io) {
+			System.out.println("Exception thrown  :" + io);
+		}
+
 	}
 
 	private JobInfo parseJob(String str) {
 		String[] strs = str.split("\\t");
 		JobInfo job = new JobInfo(strs);
-		Long inputNode = -1L;
-		if (strs.length <= 6)
-			inputNode = rd.nextLong() % networkInstance.getNodeNumber();
-		else
-			inputNode = job.getInputNode() % networkInstance.getNodeNumber();
-		job.setInputNode(inputNode);
+		// Long inputNode = -1L;
+		// if (strs.length <= 6)
+		// 	inputNode = rd.nextLong() % networkInstance.getNodeNumber();
+		// else
+		// 	inputNode = job.inputNode % networkInstance.getNodeNumber();
+		// job.setInputNode(inputNode);
 		// ArrayList<Integer> prefs = getPreference(inputNode);
 		// job.setPrefs(prefs);
 		return job;
 	}
 
-    public static void main( String[] args) {
-    	while (jobIterator.hasNext()) {
-    		timer.scheduleJob(job.next().maps, "M");
-    		Thread.sleep(20000);
-    	}
+    public void main( String[] args) {
+    	Configure.total = allJobs.size();
+    	try {
+    		for (JobInfo job : allJobs) {
+    			timer.scheduleJob(job);
+    			Thread.sleep(20000);
+    		}
     	// find all threads finish, stop them
-    	timer.join();
-
-    	schedulerInstance.join();
-    	networkInstance.join();
-    	
-    }	
-
-    
+    		timer.join();
+    		schedulerInstance.threadJoin();
+    		networkInstance.join();
+    	} catch (InterruptedException ie) {
+    		System.out.println("Exception thrown  :" + ie);
+    	}
+    }	   
 }

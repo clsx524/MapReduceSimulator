@@ -1,77 +1,84 @@
 package mrsimulator;
 
-public class DelayScheduler implements scheduler extends Thread {
+import java.util.Comparator;
+import java.util.Queue;
+import java.util.concurrent.PriorityBlockingQueue;
 
-	private class StartTimeComparator implements Comparator<JobInfo> {
-		public int compare(JobInfo j1, JobInfo j2) {
-	 		if (j1.getMaps().length() + j1.getReduce().length() <= j2.getMaps.length()+j2.getReduce().length())
+public class DelayScheduler extends Thread implements Scheduler  {
+
+	private class StartTimeComparator implements Comparator<JobInfo.TaskInfo> {
+		public int compare(JobInfo.TaskInfo j1, JobInfo.TaskInfo j2) {
+	 		if (j1.getTotalTasksNumber() <= j2.getTotalTasksNumber())
 	 			return 1;
 	 		else
 	 			return -1;
 	 	}
 	}
 
-	private Queue <JobInfo.TaskInfo> queue = null;
-	// private StartTimeComparator atc = new StartTimeComparator();
+	private Queue<JobInfo.TaskInfo> queue = null;
 
-	private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
+	// private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
 
-	private NetworkMessage nmsg = NetworkMessage.getInstance();
-
-	private static Scheduler instance = null;
+	// private NetworkMessage nmsg = NetworkMessage.getInstance();
 
 	private boolean stopSign = false;
 
-	private DelayScheduler() {
-		queue = new LinkedBlockingQueue <JobInfo>();
+	public DelayScheduler() {
+		StartTimeComparator atc = new StartTimeComparator();
+		queue = new PriorityBlockingQueue<JobInfo.TaskInfo>(1,atc);
 	}
 
-	public static scheduler getInstance() {
-		super();
-		if (instance == null) 
-			instance = new DelayScheduler();
-		return instance;
-	} 
+	public void schedule(JobInfo.TaskInfo[] tasks) {
+		if (tasks == null)
+            throw new NullPointerException("tasks is null");
 
-	public int schedule(JobInfo job, String type) {
-		if (job == null)
-            throw new NullPointerException("job is null");
-
-        queue.put(job);
-        // if (type.equals("MAP"))
-        // 	for (JobInfo.TaskInfo task : job.getMaps())
-        // 		queue.put(task);
-				
+        for (JobInfo.TaskInfo task : tasks)
+        	queue.offer(task);
 	}
 
-	public void run() {
-		while (true) {
-            synchronized(this) {
-                try {
-                	if (stopSign == true)
-                		break;
-                	if (networkInstance.hasAvailableSlots() && queue.peek() != null)
-                		JobInfo currJob = queue.poll();
-                		for(int k: currJob.getMaps().length()){
+	// public void run() {
+	// 	while (true) {
+ //            synchronized(this) {
+ //                try {
+ //                	if (stopSign == true)
+ //                		break;
+ //                	if (networkInstance.hasAvailableSlots() && queue.peek() != null)
+ //                		JobInfo currJob = queue.poll();
+ //                		for(int k: currJob.getMaps().length()){
                 			
-                		}
-                		JobInfo.TaskInfo curr = queue.poll();
-						Integer[] availableSlots = networkInstance.getAllAvailableSlots();
-						ArrayList<Integer> prefs = curr.getPrefs(); // assume it not empty
+ //                		}
+ //                		JobInfo.TaskInfo curr = queue.poll();
+	// 					Integer[] availableSlots = networkInstance.getAllAvailableSlots();
+	// 					ArrayList<Integer> prefs = curr.getPrefs(); // assume it not empty
 
-						for (Integer i : prefs)
-							if (availableSlots[i] > 0) {
-								curr.setNodeIndex(i);
-								nmsg.setMessage(curr);
-								nmsg.notify();
-							}
-                	else 
-            	   		this.wait();
-                } catch (InterruptedException e) {
-            	   e.printStackTrace();
-                }
-            }       
-        }	
+	// 					for (Integer i : prefs)
+	// 						if (availableSlots[i] > 0) {
+	// 							curr.setNodeIndex(i);
+	// 							nmsg.setMessage(curr);
+	// 							nmsg.notify();
+	// 						}
+ //                	else 
+ //            	   		this.wait();
+ //                } catch (InterruptedException e) {
+ //            	   e.printStackTrace();
+ //                }
+ //            }       
+ //        }	
+	// }
+	public void threadStart() {
+		this.start();
+	}
+
+	public void threadJoin() {
+		try {
+			this.join();
+		} catch (InterruptedException ie) {
+    		System.out.println("Exception thrown  :" + ie);
+    	}
+	}
+
+	public void threadStop() {
+		stopSign = true;
 	}
 
 }

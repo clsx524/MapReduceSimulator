@@ -1,6 +1,10 @@
 package mrsimulator;
 
-interface Topology {
-	public void genTop();
+abstract class Topology {
+
+	public int machinesPerRack;
+	public int racks;
+
+	public abstract void genTop();
 
 }

@@ -1,6 +1,6 @@
 package mrsimulator;
 
-class TreeTopology implements Topology {
+class TreeTopology extends Topology {
 	public int machinesPerRack;
 	public int racks;
 	public int racksPerL2;
@@ -31,7 +31,7 @@ class TreeTopology implements Topology {
 		profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/Results/", "TreeTopology");
 	}
 
-	public genTop() {
+	public void genTop() {
 		profile.println(machinesPerRack + "," + racks + "," + racksPerL2 + "," +  l2Switch + "," + l2PerAggr + "," + aggrSwitch + "," + l3Access + "," + l3Core);
 		profile.print2ln(rackSpeed, linkSpeed);
 		profile.nextLine();

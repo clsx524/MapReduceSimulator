@@ -2,16 +2,15 @@ package mrsimulator;
 
 public class TopologyFactory {
 
-	private Topology topologyInstance = null;
+	private static Topology topologyInstance = null;
 
 	public static Topology newInstance(String type) {
 		if (type.equals("TreeTopology"))
 			topologyInstance = new TreeTopology();
-		else if (type.equals(""))
-
-
+		//else if (type.equals(""))
 		else
 			throw new IllegalArgumentException("Invalid Topology Type");
+		return topologyInstance;
 	}
 
 	public static Topology getInstance() {

@@ -1,5 +1,10 @@
 package mrsimulator;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
 public class DistributedFileSystem {
 	
 	private Integer replicaNumber;

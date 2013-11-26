@@ -1,17 +1,20 @@
 package mrsimulator;
 
-public static class Configure {
-	public static String schedulerType = "FIFOScheduler";
-	public static String topologyType = "TreeTopology";
-	public static Long corePoolSize = 100000L;
+public final class Configure {
+	public final static String schedulerType = "FIFOScheduler";
+	public final static String topologyType = "TreeTopology";
+	public final static Long corePoolSize = 100000L;
 
-	public static Integer replica = 3;
-	public static Long blockSize = 64L; // unit is byte
+	public final static Integer replica = 3;
+	public final static Long blockSize = 64L; // unit is byte
 
-	public static Double execSpeed = 50.0;
-	public static Double ioSpeed = 10.0;
+	public final static double execSpeed = 50.0;
+	public final static double ioSpeed = 10.0;
 
-	public static Integer slotsPerNode = 500;
+	public final static Integer slotsPerNode = 500;
 
-	public static Double reduceStartPercentage = 1.0;
+	public final static Double reduceStartPercentage = 1.0;
+
+	public static long total;
+
 }

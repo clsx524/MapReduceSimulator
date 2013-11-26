@@ -2,6 +2,12 @@ package mrsimulator;
 
 interface Scheduler {
 
-	public int schedule(JobInfo job);
+	public void schedule(JobInfo.TaskInfo[] tasks);
+
+	public void threadStart();
+
+	public void threadJoin();
+
+	public void threadStop();
 
 }
