@@ -29,7 +29,11 @@ public class Timer {
 
     public static Timer getInstance() {
         if (timer == null)
+<<<<<<< HEAD
             throw new NullPointerException("timer is null");
+=======
+            timer = new Timer(size);
+>>>>>>> 795b53dfe06357640b44203031dc0e2e1650ce93
         return timer;
     } 
 
