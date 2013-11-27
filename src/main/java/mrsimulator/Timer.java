@@ -43,7 +43,7 @@ public class Timer {
 
     public void scheduleTask(JobInfo.TaskInfo task) {
         networksimulator.occupyOneSlotAtNode(task.nodeIndex);
-        task.startTime = System.currentTimeMillis();
+        task.startTime = System.currentTimeMillis() - Configure.initialTime;
         System.out.println(task.toString());
         timerQueue.schedule(new TaskAfterTimerDone(task), task.duration, TimeUnit.MICROSECONDS);
     }
@@ -82,7 +82,7 @@ public class Timer {
             
             networksimulator.addOneSlotAtNode(task.nodeIndex);
             task.progress = true;
-            task.endTime = System.currentTimeMillis();
+            task.endTime = System.currentTimeMillis() - Configure.initialTime;
             if (task.taskType == true)
                 task.setMapProgress();
             else {

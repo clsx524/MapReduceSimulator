@@ -99,6 +99,7 @@ public class JobInfo {
 	public long endTime;
 
 	public boolean reduceStarted = false;
+	public boolean finished = false;
 
 	//private ArrayList<Long> replica = new ArrayList<Long>();
 
@@ -207,8 +208,10 @@ public class JobInfo {
 //		return (double)number/((double)maps.length + (double)reduces.length);
 //	}
 	public boolean isFinished() {
-		if (mapNumber == mapProgress && reduceNumber == reduceProgress)
+		if (mapNumber == mapProgress && reduceNumber == reduceProgress) {
+			finished = true;
 			return true;
+		}
 		return false;
 	}
 

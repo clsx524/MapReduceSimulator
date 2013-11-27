@@ -102,6 +102,7 @@ public class SimulatorEngine {
 	}
 
 	public void scheduleAllJobs() {
+		Configure.initialTime = System.currentTimeMillis();
 		try {
     		for (JobInfo job : allJobs) {
     			timer.scheduleJob(job);	

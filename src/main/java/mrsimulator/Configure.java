@@ -22,4 +22,6 @@ public final class Configure {
 
 	public final static int sepmaphoreBound = 10;
 
+	public static long initialTime;
+
 }

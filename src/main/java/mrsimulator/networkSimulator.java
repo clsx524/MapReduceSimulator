@@ -79,7 +79,7 @@ public class NetworkSimulator extends Thread {
 	}
 
 	public boolean notifyFinish(JobInfo.TaskInfo task) {
-		if (!checkProgress.contains(task.getJob())) {
+		if (!checkProgress.contains(task.getJob()) && !task.getJob().finished) {
 			checkProgress.offer(task.getJob());
 			return true;
 		}
@@ -97,7 +97,7 @@ public class NetworkSimulator extends Thread {
             while (checkProgress.size() > 0) {
              	curr = checkProgress.poll();
 
-  				if (curr == null)
+  				if (curr == null || curr.finished == true)
   					continue;
   				System.out.println("network enter again: " + curr.jobID);
             	if (curr.isFinished()) {
