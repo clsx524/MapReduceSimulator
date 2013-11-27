@@ -6,7 +6,7 @@ public final class Configure {
 	public final static Long corePoolSize = 100000L;
 
 	public final static Integer replica = 3;
-	public final static Long blockSize = 64L; // unit is byte
+	public final static Long blockSize = 65536L; // unit is byte
 
 	public final static double execSpeed = 50.0;
 	public final static double ioSpeed = 10.0;

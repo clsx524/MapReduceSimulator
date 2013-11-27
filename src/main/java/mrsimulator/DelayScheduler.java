@@ -17,9 +17,9 @@ public class DelayScheduler extends Thread implements Scheduler  {
 
 	private Queue<JobInfo.TaskInfo> queue = null;
 
-	// private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
+	private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
 
-	// private NetworkMessage nmsg = NetworkMessage.getInstance();
+	private Timer timer = null;
 
 	private boolean stopSign = false;
 
@@ -79,6 +79,10 @@ public class DelayScheduler extends Thread implements Scheduler  {
 
 	public void threadStop() {
 		stopSign = true;
+	}
+
+	public void setTimer() {
+		timer = Timer.getInstance();
 	}
 
 }

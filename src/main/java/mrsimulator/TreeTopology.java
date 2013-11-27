@@ -1,8 +1,8 @@
 package mrsimulator;
 
 class TreeTopology extends Topology {
-	public int machinesPerRack;
-	public int racks;
+	// public int machinesPerRack;
+	// public int racks;
 	public int racksPerL2;
 	public int l2Switch;
 	public int l2PerAggr;
@@ -32,7 +32,7 @@ class TreeTopology extends Topology {
 	}
 
 	public void genTop() {
-		profile.println(machinesPerRack + "," + racks + "," + racksPerL2 + "," +  l2Switch + "," + l2PerAggr + "," + aggrSwitch + "," + l3Access + "," + l3Core);
+		profile.println(machinesPerRack + " " + racks + " " + racksPerL2 + " " +  l2Switch + " " + l2PerAggr + " " + aggrSwitch + " " + l3Access + " " + l3Core);
 		profile.print2ln(rackSpeed, linkSpeed);
 		profile.nextLine();
 		for (int i = 0; i < racks*machinesPerRack; i++) {

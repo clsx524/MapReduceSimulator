@@ -42,6 +42,7 @@ public class Timer {
     }
 
     public void scheduleJob(JobInfo job) {
+        System.out.println(job.jobToString());
         timerQueue.schedule(new JobAfterTimerDone(job), job.arrivalTime, TimeUnit.SECONDS);
     }
 
@@ -68,6 +69,7 @@ public class Timer {
         }
 
         public void run() {
+            System.out.println("job start schedule: " + job.jobToString());
             scheduler.schedule(job.maps);
         }
     }
@@ -81,6 +83,7 @@ public class Timer {
         }
 
         public void run() {
+            System.out.println("task finished: " + task.toString());
             networksimulator.addOneSlotAtNode(task.nodeIndex);
             task.progress = true;
             task.endTime = System.currentTimeMillis();

@@ -45,17 +45,19 @@ public class SimulatorEngine {
 		readInputFile();
 
 		/************* Init Semaphore *************/
-		netSemaphore = new Semaphore(1);
-
-		/************* Init scheduler *************/
-		schedulerInstance = SchedulerFactory.newInstance(Configure.schedulerType);
+		netSemaphore = new Semaphore(10);
 
 		/************* Init topology *************/
 		topology = TopologyFactory.newInstance(Configure.topologyType);
+		topology.genTop();
 
 		/************* Init network *************/
 		networkInstance = NetworkSimulator.newInstance(netSemaphore);
 		networkInstance.setTopology(topology, Configure.slotsPerNode);
+
+		/************* Init scheduler *************/
+		schedulerInstance = SchedulerFactory.newInstance(Configure.schedulerType);
+		networkInstance.setScheduler();
 
 		/************* Init distributed file system *************/
 		dfs = DistributedFileSystem.newInstance(Configure.replica, Configure.blockSize);
@@ -75,6 +77,7 @@ public class SimulatorEngine {
 			while ((line = inputReader.readLine()) != null)
            		allJobs.add(parseJob(line));
         	inputReader.close();
+        	Configure.total = allJobs.size();
 		} catch (IOException io) {
 			System.out.println("Exception thrown  :" + io);
 		}
@@ -95,13 +98,19 @@ public class SimulatorEngine {
 		return job;
 	}
 
-    public void main( String[] args) {
-    	Configure.total = allJobs.size();
-    	try {
+	public void scheduleAllJobs() {
+		try {
     		for (JobInfo job : allJobs) {
     			timer.scheduleJob(job);
     			Thread.sleep(20000);
     		}
+    	} catch (InterruptedException ie) {
+    		System.out.println("Exception thrown  :" + ie);
+    	}
+	}
+
+	public void join() {
+		try {
     	// find all threads finish, stop them
     		timer.join();
     		schedulerInstance.threadJoin();
@@ -109,5 +118,5 @@ public class SimulatorEngine {
     	} catch (InterruptedException ie) {
     		System.out.println("Exception thrown  :" + ie);
     	}
-    }	   
+	}	   
 }

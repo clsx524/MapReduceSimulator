@@ -15,6 +15,10 @@ public class JobInfo {
 		public boolean progress = false;
 		public boolean taskType = true; // true MAP; false REDUCE
 
+		public String toString() {
+			return jobID + " " + duration + " " + startTime + " " + endTime + " " + taskType;
+		}
+
 		public Integer getMapNumber() {
 			return mapNumber;
 		}
@@ -99,7 +103,7 @@ public class JobInfo {
 	}
 
 	public void initTasks(Long blockSize) {
-		if (mapNumber % blockSize == 0)
+		if (mapInputBytes % blockSize == 0)
 			mapNumber = (int) (mapInputBytes / blockSize);
 		else
 			mapNumber = (int) (mapInputBytes / blockSize + 1);
@@ -109,11 +113,12 @@ public class JobInfo {
 		else
 			reduceNumber = (int) (reduceOutputBytes / blockSize + 1);
 
-		maps = new JobInfo.TaskInfo[mapNumber.intValue()];
-		reduces = new JobInfo.TaskInfo[reduceNumber.intValue()];
-
+		maps = new TaskInfo[mapNumber];
+		reduces = new TaskInfo[reduceNumber];
+		//System.out.println(mapNumber + " " + reduceNumber);
 		Long mapBytes = mapInputBytes;
 		for (int i = 0; i < mapNumber; i++) {
+			maps[i] = this.new TaskInfo();
 			maps[i].taskType = true;
 			if (mapBytes > blockSize) {
 				maps[i].setDuration((blockSize.doubleValue() / Configure.execSpeed + blockSize.doubleValue() / Configure.ioSpeed) * Math.pow(10.0, 6.0));
@@ -126,7 +131,8 @@ public class JobInfo {
 		}
 
 		Long reduceBytes = reduceOutputBytes;
-		for (int i = 0; i < mapNumber; i++) {
+		for (int i = 0; i < reduceNumber; i++) {
+			reduces[i] = this.new TaskInfo();
 			reduces[i].taskType = false;
 			if (reduceBytes > blockSize) {
 				reduces[i].setDuration((blockSize.doubleValue() / Configure.execSpeed + shuffleBytes.doubleValue() / Configure.ioSpeed / reduceNumber) * Math.pow(10.0, 6.0));

@@ -37,7 +37,7 @@ public class NetworkSimulator extends Thread {
 
 	private long finished = 0L;
 
-	private Scheduler SchedulerInstance = SchedulerFactory.getInstance();
+	private Scheduler SchedulerInstance = null;
 
 	private Random rd = new Random(System.currentTimeMillis());
 
@@ -55,6 +55,10 @@ public class NetworkSimulator extends Thread {
 
 	private NetworkSimulator(Semaphore net) {
 		netSemaphore = net;
+	}
+
+	public void setScheduler() {
+		SchedulerInstance = SchedulerFactory.getInstance();
 	}
 
 	public void setTopology(Topology topology, Integer spn) {
@@ -94,6 +98,9 @@ public class NetworkSimulator extends Thread {
             netSemaphore.release();
 
             curr = checkProgress.poll();
+            if (curr == null) {
+            	continue;
+            }
             if (curr.isFinished()) {
             	finished++;
             	profile.print(curr.getJob());

@@ -10,4 +10,6 @@ interface Scheduler {
 
 	public void threadStop();
 
+	public void setTimer();
+
 }

@@ -17,7 +17,7 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 
 	private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
 
-	private Timer timer = Timer.getInstance();
+	private Timer timer = null;
 
 	private boolean stopSign = false;
 
@@ -45,6 +45,10 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 
 	public void threadStop() {
 		stopSign = true;
+	}
+
+	public void setTimer() {
+		timer = Timer.getInstance();
 	}
 
 	public void run() {
