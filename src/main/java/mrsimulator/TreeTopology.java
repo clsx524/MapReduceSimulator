@@ -16,8 +16,8 @@ class TreeTopology extends Topology {
 	private Profiler profile = null;
 
 	public TreeTopology() {
-		machinesPerRack = 20;
-		racks = 30;
+		machinesPerRack = Configure.machinesPerRack;
+		racks = Configure.racks;
 		racksPerL2 = 3;
 		l2Switch = 20;
 		l2PerAggr = 4;

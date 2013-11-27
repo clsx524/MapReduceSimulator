@@ -1,8 +1,11 @@
 package mrsimulator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class FIFOScheduler extends Thread implements Scheduler  {
 
@@ -27,8 +30,11 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 		if (tasks == null)
             throw new NullPointerException("job is null");
 
-       	for (JobInfo.TaskInfo task : tasks)
-        	queue.offer(task);
+       	for (JobInfo.TaskInfo task : tasks) {
+       		queue.offer(task);
+       		System.out.println(task.toString());
+       	}
+        	
 	}
 
 	public void threadStart() {
@@ -52,14 +58,19 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 	}
 
 	public void run() {
-		ArrayList<Integer> prefs = null;
+		Set<Integer> prefs = null;
+		PriorityBlockingQueue<SlotsLeft> queueLeft = null;
 		while (!stopSign) {
+
 			if (networkInstance.hasAvailableSlots() && queue.peek() != null) {
                 curr = queue.poll();
+                System.out.println("start scheduling task: " + curr.toString());
 				if (curr.taskType == true)
 					prefs = curr.getMapPrefs();
 				else
 				 	prefs = curr.getReducePrefs(); // assume it not empty
+
+				queueLeft = curr.getRackLocality();
 
 				boolean found = false;
 				for (Integer i : prefs)
@@ -68,9 +79,17 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 						found = true;
 						break;								
 					}
+				for (SlotsLeft i : queueLeft)
+					if (networkInstance.checkSlotsAtNode(i.machineNumber)) {
+						curr.nodeIndex = i.machineNumber;
+						found = true;
+						break;								
+					}
+
 				if (!found) {
 					int r = networkInstance.pickUpOneSlotRandom();
 					curr.nodeIndex = r;
+					curr.setReducePrefs();
 				}
 				timer.scheduleTask(curr);
 			}

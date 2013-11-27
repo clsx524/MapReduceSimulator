@@ -12,6 +12,8 @@ public class DistributedFileSystem {
 
 	private static DistributedFileSystem dfs = null;
 
+	private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
+
 	private int machinesPerRack;
 	private int racks;
 
@@ -42,24 +44,19 @@ public class DistributedFileSystem {
 		for (JobInfo job : alljobs) {
 			int rack = rd.nextInt(racks);
 			replicationPlacement(job, rack);
-
 			for (int i = 0; i < machinesPerRack; i++) {
-				if (!job.mapPrefs.contains(i))
-					job.mapPrefs.add(i);
+				job.mapRackLocality.offer(networkInstance.node2Left.get(i+machinesPerRack*rack));
 			}
 		}
 	}
 
 	private void replicationPlacement(JobInfo job, int rack) {
-		Map<Integer, Boolean> ex = new HashMap<Integer, Boolean>();
 		int i = 0;
 		while (i < replicaNumber) {
 			int j = rd.nextInt(machinesPerRack) + rack * machinesPerRack;
-			if (!ex.containsKey(j)) {
-				job.mapPrefs.add(j);
-				ex.put(j, true);
+			boolean res = job.mapPrefs.add(j);
+			if (res == true)
 				i++;
-			}
 		}
 	}
 

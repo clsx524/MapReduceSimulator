@@ -26,7 +26,9 @@ public class SimulatorEngine {
 
 	private Random rd = new Random(System.currentTimeMillis());
 
-	private Semaphore netSemaphore = null;
+	private BoundedSemaphore netSemaphore = null;
+
+	private Profiler profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/", "TasksPreview"); 
 
 	public SimulatorEngine() {
 		init();
@@ -45,7 +47,7 @@ public class SimulatorEngine {
 		readInputFile();
 
 		/************* Init Semaphore *************/
-		netSemaphore = new Semaphore(10);
+		netSemaphore = new BoundedSemaphore(Configure.sepmaphoreBound);
 
 		/************* Init topology *************/
 		topology = TopologyFactory.newInstance(Configure.topologyType);
@@ -65,7 +67,8 @@ public class SimulatorEngine {
 		dfs.updateTaskNumber(allJobs);
 
 		/************* Init timer *************/
-		timer = Timer.newInstance(Configure.corePoolSize, netSemaphore);
+		timer = Timer.newInstance(netSemaphore);
+		schedulerInstance.setTimer();
 
 		/************* Init all services *************/
 		networkInstance.start();
@@ -101,9 +104,10 @@ public class SimulatorEngine {
 	public void scheduleAllJobs() {
 		try {
     		for (JobInfo job : allJobs) {
-    			timer.scheduleJob(job);
-    			Thread.sleep(20000);
+    			timer.scheduleJob(job);	
+    			profile.print(job);
     		}
+    		Thread.sleep(3600000);
     	} catch (InterruptedException ie) {
     		System.out.println("Exception thrown  :" + ie);
     	}

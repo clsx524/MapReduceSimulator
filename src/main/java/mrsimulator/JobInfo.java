@@ -1,12 +1,16 @@
 package mrsimulator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.lang.Math;
 
 public class JobInfo {
 
 	public class TaskInfo {
 
+		public int taskID = -1;
 		public long duration = -1L;
 		public Integer fileSize = -1; // bytes
 		public Integer nodeIndex = -1;
@@ -16,7 +20,7 @@ public class JobInfo {
 		public boolean taskType = true; // true MAP; false REDUCE
 
 		public String toString() {
-			return jobID + " " + duration + " " + startTime + " " + endTime + " " + taskType;
+			return jobID + " " + taskID + " " + duration + " " + fileSize + " " + nodeIndex + " " + startTime + " " + endTime + " " + taskType + " " + mapProgress + " " + reduceProgress;
 		}
 
 		public Integer getMapNumber() {
@@ -49,19 +53,31 @@ public class JobInfo {
 		public void setJobEndTime() {
 			JobInfo.this.endTime = endTime;
 		}
-		public boolean isFinished() {
-			if (mapNumber == mapProgress && reduceNumber == reduceProgress)
-				return true;
-			return false;
-		}
 		public void setDuration(double d) {
 			duration = (long) d;
 		}
-		public ArrayList<Integer> getMapPrefs() {
+		public Set<Integer> getMapPrefs() {
 			return mapPrefs;
 		}
-		public ArrayList<Integer> getReducePrefs() {
+		public Set<Integer> getReducePrefs() {
 			return reducePrefs;
+		}
+		public void setReducePrefs() {
+			if (taskType == true) {
+				boolean res = reducePrefs.add(nodeIndex);
+				if (res) {
+					int rack = nodeIndex / Configure.machinesPerRack;
+					for (int i = 0; i < Configure.machinesPerRack; i++) {
+						reduceRackLocality.offer(NetworkSimulator.getInstance().node2Left.get(i + Configure.machinesPerRack * rack));
+					}
+				}
+			}
+		}
+		public PriorityBlockingQueue<SlotsLeft> getRackLocality() {
+			if (taskType == true)
+				return mapRackLocality;
+			else
+				return reduceRackLocality;
 		}
 	}
 
@@ -82,13 +98,18 @@ public class JobInfo {
 	public long startTime;
 	public long endTime;
 
+	public boolean reduceStarted = false;
+
 	//private ArrayList<Long> replica = new ArrayList<Long>();
 
 	public JobInfo.TaskInfo[] maps = null; // how to make sure map scheduled before reduce
 	public JobInfo.TaskInfo[] reduces = null;
 
-	public ArrayList<Integer> mapPrefs = new ArrayList<Integer>();
-	public ArrayList<Integer> reducePrefs = new ArrayList<Integer>();
+	public Set<Integer> mapPrefs = new HashSet<Integer>();
+	public Set<Integer> reducePrefs = new HashSet<Integer>();
+
+	public PriorityBlockingQueue<SlotsLeft> mapRackLocality = new PriorityBlockingQueue<SlotsLeft>();
+	public PriorityBlockingQueue<SlotsLeft> reduceRackLocality = new PriorityBlockingQueue<SlotsLeft>();
 
 	public JobInfo(String[] strs) {
 		jobID = Integer.parseInt(strs[0].substring(3));
@@ -119,6 +140,7 @@ public class JobInfo {
 		Long mapBytes = mapInputBytes;
 		for (int i = 0; i < mapNumber; i++) {
 			maps[i] = this.new TaskInfo();
+			maps[i].taskID = i;
 			maps[i].taskType = true;
 			if (mapBytes > blockSize) {
 				maps[i].setDuration((blockSize.doubleValue() / Configure.execSpeed + blockSize.doubleValue() / Configure.ioSpeed) * Math.pow(10.0, 6.0));
@@ -133,6 +155,7 @@ public class JobInfo {
 		Long reduceBytes = reduceOutputBytes;
 		for (int i = 0; i < reduceNumber; i++) {
 			reduces[i] = this.new TaskInfo();
+			reduces[i].taskID = i;
 			reduces[i].taskType = false;
 			if (reduceBytes > blockSize) {
 				reduces[i].setDuration((blockSize.doubleValue() / Configure.execSpeed + shuffleBytes.doubleValue() / Configure.ioSpeed / reduceNumber) * Math.pow(10.0, 6.0));
@@ -183,18 +206,27 @@ public class JobInfo {
 //
 //		return (double)number/((double)maps.length + (double)reduces.length);
 //	}
+	public boolean isFinished() {
+		if (mapNumber == mapProgress && reduceNumber == reduceProgress)
+			return true;
+		return false;
+	}
 
+	public double prog() {
+		System.out.println("progress check: " + (mapProgress.doubleValue() / mapNumber.doubleValue()));
+		return (mapProgress.doubleValue() / mapNumber.doubleValue());
+	}
 
 
 	public String jobToString() {
-		return "Job: " + jobID + " " + startTime + " " + endTime;
+		return "Job: " + jobID + " " + arrivalTime + " " + startTime + " " + endTime + " " + mapInputBytes + " " + shuffleBytes + " " + reduceOutputBytes + " " + mapPrefs.size() + " " + reducePrefs.size();
 	}
 
 	public String mapTaskToString(int i) {
-		return "Task: " + maps[i].taskType + " " + maps[i].startTime + " " + maps[i].endTime + " " + maps[i].duration + " " + maps[i].nodeIndex + " " + maps[i].fileSize;
+		return "	Task: " + maps[i].toString();
 	}
 
 	public String reduceTaskToString(int i) {
-		return "	Task: " + reduces[i].taskType + " " + reduces[i].startTime + " " + reduces[i].endTime + " " + reduces[i].duration + " " + reduces[i].nodeIndex + " " + reduces[i].fileSize;
+		return "	Task: " + reduces[i].toString();
 	}
 }

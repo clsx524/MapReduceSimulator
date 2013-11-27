@@ -3,27 +3,22 @@ package mrsimulator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 
 public class Timer {
-    private final Long corePoolSize;
+    private int corePoolSize = Configure.corePoolSize;
     private final ScheduledThreadPoolExecutor timerQueue;
     private static Timer timer = null;
 
     private final NetworkSimulator networksimulator;
 
-    private Semaphore netSemaphore = null;
+    private BoundedSemaphore netSemaphore = null;
     
     private final Scheduler scheduler;
     
-    private Timer(Long size, Semaphore ns) {
-        if (size < 0L)
-            corePoolSize = 10000L;
-        else
-            corePoolSize = size;
-        timerQueue = new ScheduledThreadPoolExecutor(corePoolSize.intValue()); 
+    private Timer(BoundedSemaphore ns) {
+        timerQueue = new ScheduledThreadPoolExecutor(corePoolSize); 
         networksimulator = NetworkSimulator.getInstance();  
         netSemaphore = ns;
         scheduler = SchedulerFactory.getInstance();  
@@ -35,9 +30,9 @@ public class Timer {
         return timer;
     } 
 
-    public static Timer newInstance(Long size, Semaphore ns) {
+    public static Timer newInstance(BoundedSemaphore ns) {
         if (timer == null)
-            timer = new Timer(size, ns);
+            timer = new Timer(ns);
         return timer;        
     }
 
@@ -49,7 +44,8 @@ public class Timer {
     public void scheduleTask(JobInfo.TaskInfo task) {
         networksimulator.occupyOneSlotAtNode(task.nodeIndex);
         task.startTime = System.currentTimeMillis();
-        timerQueue.schedule(new TaskAfterTimerDone(task), task.duration, TimeUnit.SECONDS);
+        System.out.println(task.toString());
+        timerQueue.schedule(new TaskAfterTimerDone(task), task.duration, TimeUnit.MICROSECONDS);
     }
 
     public void join() {
@@ -83,19 +79,20 @@ public class Timer {
         }
 
         public void run() {
-            System.out.println("task finished: " + task.toString());
+            
             networksimulator.addOneSlotAtNode(task.nodeIndex);
             task.progress = true;
             task.endTime = System.currentTimeMillis();
-            if (task.taskType == true) 
+            if (task.taskType == true)
                 task.setMapProgress();
             else {
                 task.setReduceProgress();
                 task.setJobEndTime();
             }
-                
+            System.out.println("task finished: " + task.toString());   
             try {
-                netSemaphore.acquire();
+                if (networksimulator.notifyFinish(task))
+                    netSemaphore.acquire();
             } catch (InterruptedException ie) {
                 System.out.println("Exception thrown  :" + ie);
             }

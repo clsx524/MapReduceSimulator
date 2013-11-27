@@ -1,34 +1,18 @@
 package mrsimulator;
 
 import java.util.Queue;
+import java.util.Deque;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.Semaphore;
 
 public class NetworkSimulator extends Thread {
 
-	public class SlotsLeft implements Comparable<SlotsLeft>{
-		public int slotNumber;
-		public int left;
-
-		public SlotsLeft(int sn, int l) {
-			slotNumber = sn;
-			left = l;
-		}
-
-		@Override
-    	public int compareTo(SlotsLeft other){
-        	return (left > other.left ? -1 : (left == other.left ? 0 : 1));
-    	}
-
-	}
 	private static NetworkSimulator instance = null;
 
-	//private Map<Integer, Set<Integer>> node2Task = new HashMap<Integer, Set<Integer>>();
-	private ConcurrentMap<Integer, SlotsLeft> node2Left = new ConcurrentHashMap<Integer, SlotsLeft>();
+	public ConcurrentMap<Integer, SlotsLeft> node2Left = new ConcurrentHashMap<Integer, SlotsLeft>();
 
 	private int machinesPerRack;
 	private int racks;
@@ -43,17 +27,19 @@ public class NetworkSimulator extends Thread {
 
 	private Queue<SlotsLeft> queue = new PriorityBlockingQueue<SlotsLeft>();
 
-	private Queue<JobInfo.TaskInfo> checkProgress = new LinkedBlockingQueue<JobInfo.TaskInfo>();
+	private Deque<JobInfo> checkProgress = new LinkedBlockingDeque<JobInfo>();
 
 	private Profiler profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/Results/", "Tasks");
 
-	private Semaphore netSemaphore = null;
-
-	private JobInfo.TaskInfo curr = null;
+	private JobInfo curr = null;
 
 	private boolean stopSign = false;
 
-	private NetworkSimulator(Semaphore net) {
+	private BoundedSemaphore netSemaphore = null;
+
+	//private Queue<SlotsLeft>[] rackLeft = null;
+
+	private NetworkSimulator(BoundedSemaphore net) {
 		netSemaphore = net;
 	}
 
@@ -66,11 +52,14 @@ public class NetworkSimulator extends Thread {
 		racks = topology.racks;
 		slotsPerNode = spn;
 		machines = machinesPerRack * racks;
+		//rackLeft = new PriorityBlockingQueue<SlotsLeft>[racks];
 		// totalSlots = machines * slotsPerNode;
 		// availableSlots = totalSlots;
 		for (int i = 0; i < machines; i++) {
 			SlotsLeft sl = new SlotsLeft(i, slotsPerNode);
 			node2Left.put(i, sl);
+			queue.offer(sl);
+			//rackLeft[i].offer(sl);
 		}
 	}
 	public static NetworkSimulator getInstance() {
@@ -79,7 +68,7 @@ public class NetworkSimulator extends Thread {
 		return instance;
 	}
 
-	public static NetworkSimulator newInstance(Semaphore net) {
+	public static NetworkSimulator newInstance(BoundedSemaphore net) {
 		if (instance == null)
 			instance = new NetworkSimulator(net);
 		return instance;
@@ -89,33 +78,48 @@ public class NetworkSimulator extends Thread {
 		return machinesPerRack * racks;
 	}
 
-	public void notifyFinish(JobInfo.TaskInfo task) {
-		checkProgress.offer(task);
+	public boolean notifyFinish(JobInfo.TaskInfo task) {
+		if (!checkProgress.contains(task.getJob())) {
+			checkProgress.offer(task.getJob());
+			return true;
+		}
+		return false;
 	}
 
 	public void run() {
-        while (!stopSign) {
-            netSemaphore.release();
 
-            curr = checkProgress.poll();
-            if (curr == null) {
-            	continue;
+        while (!stopSign) {
+        	try {
+            	netSemaphore.release();
+        	} catch (InterruptedException ie) {
+                System.out.println("Exception thrown  :" + ie);
             }
-            if (curr.isFinished()) {
-            	finished++;
-            	profile.print(curr.getJob());
-            	if (finished == Configure.total) {
-            		SchedulerInstance.threadStop();
-            		stopSign = true;
-            	}
-            } else if (curr.getMapProgress() / curr.getMapNumber() > Configure.reduceStartPercentage)
-           		SchedulerInstance.schedule(curr.getReduces());
+            while (checkProgress.size() > 0) {
+             	curr = checkProgress.poll();
+
+  				if (curr == null)
+  					continue;
+  				System.out.println("network enter again: " + curr.jobID);
+            	if (curr.isFinished()) {
+            		System.out.println("Job finished: " + curr.jobID);
+            		finished++;
+            		profile.print(curr);
+            		if (finished == Configure.total) {
+            			SchedulerInstance.threadStop();
+            			stopSign = true;
+            		}
+            	} else if (curr.reduceStarted == false && curr.prog() >= Configure.reduceStartPercentage) {
+            		System.out.println("Map almost finished: " + curr.jobID);
+            		SchedulerInstance.schedule(curr.reduces);
+            		curr.reduceStarted = true;
+            	}           	
+            }
         }
 	}
 
 	public synchronized int pickUpOneSlotRandom() {
 		if (queue.peek() != null && queue.peek().left > 0)
-			return queue.peek().slotNumber;
+			return queue.peek().machineNumber;
 		return -1;
 	}
 
@@ -138,6 +142,7 @@ public class NetworkSimulator extends Thread {
 	}
 
 	public boolean hasAvailableSlots() {
+		//System.out.println(queue.peek() == null);
 		if (queue.peek() != null && queue.peek().left > 0)
 			return true;
 		return false;
