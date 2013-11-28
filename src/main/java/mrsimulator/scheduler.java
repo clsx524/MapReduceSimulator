@@ -12,4 +12,6 @@ interface Scheduler {
 
 	public void setTimer();
 
+	public int getQueueSize();
+
 }

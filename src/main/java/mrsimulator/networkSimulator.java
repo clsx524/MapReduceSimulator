@@ -19,7 +19,7 @@ public class NetworkSimulator extends Thread {
 	private int slotsPerNode;
 	private int machines;
 
-	private Scheduler SchedulerInstance = null;
+	private Scheduler schedulerInstance = null;
 
 	private Random rd = new Random(System.currentTimeMillis());
 
@@ -37,14 +37,12 @@ public class NetworkSimulator extends Thread {
 
 	public long finished = 0L;
 
-	//private Queue<SlotsLeft>[] rackLeft = null;
-
 	private NetworkSimulator(BoundedSemaphore net) {
 		netSemaphore = net;
 	}
 
 	public void setScheduler() {
-		SchedulerInstance = SchedulerFactory.getInstance();
+		schedulerInstance = SchedulerFactory.getInstance();
 	}
 
 	public void setTopology(Topology topology, Integer spn) {
@@ -52,14 +50,10 @@ public class NetworkSimulator extends Thread {
 		racks = topology.racks;
 		slotsPerNode = spn;
 		machines = machinesPerRack * racks;
-		//rackLeft = new PriorityBlockingQueue<SlotsLeft>[racks];
-		// totalSlots = machines * slotsPerNode;
-		// availableSlots = totalSlots;
 		for (int i = 0; i < machines; i++) {
 			SlotsLeft sl = new SlotsLeft(i, slotsPerNode);
 			node2Left.put(i, sl);
 			queue.offer(sl);
-			//rackLeft[i].offer(sl);
 		}
 	}
 	public static NetworkSimulator getInstance() {
@@ -99,18 +93,17 @@ public class NetworkSimulator extends Thread {
 
   				if (curr == null || curr.finished == true)
   					continue;
-  				System.out.println("network enter again: " + curr.jobID);
             	if (curr.isFinished()) {
             		System.out.println("Job finished: " + curr.jobID);
             		finished++;
             		profile.print(curr);
             		if (finished == Configure.total) {
-            			SchedulerInstance.threadStop();
+            			schedulerInstance.threadStop();
             			stopSign = true;
             		}
             	} else if (curr.reduceStarted == false && curr.prog() >= Configure.reduceStartPercentage) {
             		System.out.println("Map almost finished: " + curr.jobID);
-            		SchedulerInstance.schedule(curr.reduces);
+            		schedulerInstance.schedule(curr.reduces);
             		curr.reduceStarted = true;
             	}           	
             }
@@ -142,7 +135,6 @@ public class NetworkSimulator extends Thread {
 	}
 
 	public boolean hasAvailableSlots() {
-		//System.out.println(queue.peek() == null);
 		if (queue.peek() != null && queue.peek().left > 0)
 			return true;
 		return false;

@@ -3,7 +3,7 @@ package mrsimulator;
 public final class Configure {
 	public final static String schedulerType = "FIFOScheduler";
 	public final static String topologyType = "TreeTopology";
-	public final static int corePoolSize = Integer.MAX_VALUE;
+	public final static int corePoolSize = 60000;//Integer.MAX_VALUE;
 
 	public final static Integer replica = 3;
 	public final static Long blockSize = 65536L; // unit is byte
@@ -23,5 +23,7 @@ public final class Configure {
 	public final static int sepmaphoreBound = 10;
 
 	public static long initialTime;
+
+	public final static int progressCheckPeriod = 5000;
 
 }

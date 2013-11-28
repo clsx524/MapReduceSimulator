@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Timer {
     private int corePoolSize = Configure.corePoolSize;
-    private final ScheduledThreadPoolExecutor timerQueue;
+    public ScheduledThreadPoolExecutor timerQueue;
     private static Timer timer = null;
 
     private final NetworkSimulator networksimulator;
@@ -37,14 +37,12 @@ public class Timer {
     }
 
     public void scheduleJob(JobInfo job) {
-        System.out.println(job.jobToString());
         timerQueue.schedule(new JobAfterTimerDone(job), job.arrivalTime, TimeUnit.SECONDS);
     }
 
     public void scheduleTask(JobInfo.TaskInfo task) {
         networksimulator.occupyOneSlotAtNode(task.nodeIndex);
         task.startTime = System.currentTimeMillis() - Configure.initialTime;
-        System.out.println(task.toString());
         timerQueue.schedule(new TaskAfterTimerDone(task), task.duration, TimeUnit.MICROSECONDS);
     }
 

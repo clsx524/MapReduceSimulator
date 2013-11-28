@@ -85,4 +85,8 @@ public class DelayScheduler extends Thread implements Scheduler  {
 		timer = Timer.getInstance();
 	}
 
+	public int getQueueSize() {
+		return queue.size();
+	}
+
 }

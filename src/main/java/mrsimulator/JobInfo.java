@@ -137,7 +137,6 @@ public class JobInfo {
 
 		maps = new TaskInfo[mapNumber];
 		reduces = new TaskInfo[reduceNumber];
-		//System.out.println(mapNumber + " " + reduceNumber);
 		Long mapBytes = mapInputBytes;
 		for (int i = 0; i < mapNumber; i++) {
 			maps[i] = this.new TaskInfo();
@@ -178,35 +177,6 @@ public class JobInfo {
 			throw new IllegalArgumentException("Invalid task type");
 	}
 
-	// public long getDurationWithTaskID(String taskType, Integer tid) {
-	// 	if (taskType.equals("MAP"))
-	// 		return maps[tid].duration;
-	// 	else if (taskType.equals("REDUCE"))
-	// 		return reduces[tid].duration;
-	// 	else
-	// 		throw new IllegalArgumentException("Invalid task type");
-	// } 
-
-	// public Integer getNodeIndexWithTaskID(String taskType, Integer tid) {
-	// 	if (taskType.equals("MAP"))
-	// 		return maps[tid].nodeIndex;
-	// 	else if (taskType.equals("REDUCE"))
-	// 		return reduces[tid].nodeIndex;
-	// 	else
-	// 		throw new IllegalArgumentException("Invalid task type");
-	// }
-
-//	public double checkProgress() {
-//		int number = 0;
-//		for (int i = 0; i < maps.length; i++)
-//			if (maps[i].progress)
-//				number++;
-//		for (int i = 0; i < reduces.length; i++)
-//			if (reduces[i].getProgress())
-//				number++;
-//
-//		return (double)number/((double)maps.length + (double)reduces.length);
-//	}
 	public boolean isFinished() {
 		if (mapNumber == mapProgress && reduceNumber == reduceProgress) {
 			finished = true;
@@ -216,7 +186,6 @@ public class JobInfo {
 	}
 
 	public double prog() {
-		System.out.println("progress check: " + (mapProgress.doubleValue() / mapNumber.doubleValue()));
 		return (mapProgress.doubleValue() / mapNumber.doubleValue());
 	}
 

@@ -90,34 +90,29 @@ public class SimulatorEngine {
 	private JobInfo parseJob(String str) {
 		String[] strs = str.split("\\t");
 		JobInfo job = new JobInfo(strs);
-		// Long inputNode = -1L;
-		// if (strs.length <= 6)
-		// 	inputNode = rd.nextLong() % networkInstance.getNodeNumber();
-		// else
-		// 	inputNode = job.inputNode % networkInstance.getNodeNumber();
-		// job.setInputNode(inputNode);
-		// ArrayList<Integer> prefs = getPreference(inputNode);
-		// job.setPrefs(prefs);
 		return job;
 	}
 
 	public void scheduleAllJobs() {
 		Configure.initialTime = System.currentTimeMillis();
-		try {
-    		for (JobInfo job : allJobs) {
-    			timer.scheduleJob(job);	
-    			profile.print(job);
-    		}
-    		Thread.sleep(36000000);
-    	} catch (InterruptedException ie) {
-    		System.out.println("Exception thrown  :" + ie);
+    	for (JobInfo job : allJobs) {
+    		timer.scheduleJob(job);	
+    		profile.print(job);
     	}
 	}
 
 	public void join() {
 		try {
     	// find all threads finish, stop them
-			//while (Configure.total != networkInstance.finished) { Thread.sleep(); }
+			while (Configure.total != networkInstance.finished) { 
+				System.out.println("************* Current Summary *************");
+				System.out.println("Total Finished Jobs: " + networkInstance.finished + " total: " + Configure.total);
+				System.out.println("Timer queue size: " + timer.timerQueue.getQueue().size() + " Schuduler queue size: " + schedulerInstance.getQueueSize());
+				System.out.println("Slots available: " + networkInstance.hasAvailableSlots());
+				System.out.println("************* Current Summary *************");
+				Thread.sleep(Configure.progressCheckPeriod); 
+			}
+			System.out.println("All Jobs finished");
     		timer.join();
     		schedulerInstance.threadJoin();
     		networkInstance.join();

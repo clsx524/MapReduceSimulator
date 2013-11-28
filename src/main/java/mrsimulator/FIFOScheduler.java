@@ -32,7 +32,6 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 
        	for (JobInfo.TaskInfo task : tasks) {
        		queue.offer(task);
-       		System.out.println(task.toString());
        	}
         	
 	}
@@ -55,6 +54,10 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 
 	public void setTimer() {
 		timer = Timer.getInstance();
+	}
+
+	public int getQueueSize() {
+		return queue.size();
 	}
 
 	public void run() {
