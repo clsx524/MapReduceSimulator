@@ -19,8 +19,6 @@ public class NetworkSimulator extends Thread {
 	private int slotsPerNode;
 	private int machines;
 
-	private long finished = 0L;
-
 	private Scheduler SchedulerInstance = null;
 
 	private Random rd = new Random(System.currentTimeMillis());
@@ -36,6 +34,8 @@ public class NetworkSimulator extends Thread {
 	private boolean stopSign = false;
 
 	private BoundedSemaphore netSemaphore = null;
+
+	public long finished = 0L;
 
 	//private Queue<SlotsLeft>[] rackLeft = null;
 

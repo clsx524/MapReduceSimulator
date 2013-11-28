@@ -108,7 +108,7 @@ public class SimulatorEngine {
     			timer.scheduleJob(job);	
     			profile.print(job);
     		}
-    		Thread.sleep(3600000);
+    		Thread.sleep(36000000);
     	} catch (InterruptedException ie) {
     		System.out.println("Exception thrown  :" + ie);
     	}
@@ -117,6 +117,7 @@ public class SimulatorEngine {
 	public void join() {
 		try {
     	// find all threads finish, stop them
+			//while (Configure.total != networkInstance.finished) { Thread.sleep(); }
     		timer.join();
     		schedulerInstance.threadJoin();
     		networkInstance.join();
