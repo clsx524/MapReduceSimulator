@@ -18,4 +18,6 @@ interface Scheduler {
 
 	public boolean isInterrupted();
 
+	public int failureTimes();
+
 }

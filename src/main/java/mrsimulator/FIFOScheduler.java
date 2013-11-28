@@ -28,6 +28,8 @@ public class FIFOScheduler implements Scheduler  {
 
 	private RoutineSchedule routine = null;
 
+	private int failure = -1;
+
 	public void schedule(JobInfo.TaskInfo[] tasks) {
 		if (tasks == null)
             throw new NullPointerException("job is null");
@@ -66,7 +68,12 @@ public class FIFOScheduler implements Scheduler  {
 		return routine.isInterrupted();
 	}
 
+	public int failureTimes() {
+		return failure;
+	}
+
 	public void start() {
+		failure++;
 		routine = new RoutineSchedule();
 		routine.start();
 	}

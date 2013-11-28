@@ -25,6 +25,8 @@ public class DelayScheduler implements Scheduler  {
 
 	private RoutineSchedule routine = null;
 
+	private int failure = -1;
+
 	public DelayScheduler() {
 		StartTimeComparator atc = new StartTimeComparator();
 		queue = new PriorityBlockingQueue<JobInfo.TaskInfo>(1,atc);
@@ -95,8 +97,14 @@ public class DelayScheduler implements Scheduler  {
 		return routine.isInterrupted();
 	}
 
+	public int failureTimes() {
+		return failure;
+	}
+
 	public void start() {
+		failure++;
 		routine = new RoutineSchedule();
+		routine.start();
 	}
 
 	class RoutineSchedule extends Thread {

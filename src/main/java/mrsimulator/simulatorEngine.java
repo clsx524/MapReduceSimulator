@@ -107,13 +107,14 @@ public class SimulatorEngine {
 		try {
     	// find all threads finish, stop them
 			while (Configure.total != networkInstance.finished) { 
-				System.out.println("************* Current Summary *************");
-				System.out.println("Scheduler alive: " + schedulerInstance.isAlive() + " Interrupted: " + schedulerInstance.isInterrupted());
-				System.out.println("NetworkSimulator alive: " + networkInstance.isAlive() + " Interrupted: " + networkInstance.isInterrupted());
+				System.out.println("************* Current Status Summary *************");
+				System.out.println("Scheduler alive: " + schedulerInstance.isAlive() + "; Interrupted: " + schedulerInstance.isInterrupted());
+				System.out.println("NetworkSimulator alive: " + networkInstance.isAlive() + "; Interrupted: " + networkInstance.isInterrupted());
 				System.out.println("Total Finished Jobs: " + networkInstance.finished + " total: " + Configure.total);
 				System.out.println("Timer queue size: " + timer.timerQueue.getQueue().size() + " Schuduler queue size: " + schedulerInstance.getQueueSize());
 				System.out.println("Slots available: " + networkInstance.hasAvailableSlots());
-				System.out.println("************* Current Summary *************");
+				System.out.println("Scheduler failure times: " + schedulerInstance.failureTimes());
+				System.out.println("*************=*************=*************");
 
 				if (!schedulerInstance.isAlive())
 					schedulerInstance.start();
