@@ -73,6 +73,8 @@ public class SimulatorEngine {
 		/************* Init all services *************/
 		networkInstance.start();
 		schedulerInstance.start();
+
+		System.out.println("Initializing finished ... All services started ...");
 	}
 	private void readInputFile() {
 		String line = null;
@@ -112,6 +114,10 @@ public class SimulatorEngine {
 				System.out.println("Timer queue size: " + timer.timerQueue.getQueue().size() + " Schuduler queue size: " + schedulerInstance.getQueueSize());
 				System.out.println("Slots available: " + networkInstance.hasAvailableSlots());
 				System.out.println("************* Current Summary *************");
+
+				if (!schedulerInstance.isAlive())
+					schedulerInstance.start();
+
 				Thread.sleep(Configure.progressCheckPeriod); 
 			}
 			System.out.println("All Jobs finished");

@@ -68,6 +68,7 @@ public class FIFOScheduler implements Scheduler  {
 
 	public void start() {
 		routine = new RoutineSchedule();
+		routine.start();
 	}
 
 	class RoutineSchedule extends Thread {
