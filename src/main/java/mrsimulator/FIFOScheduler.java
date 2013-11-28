@@ -7,7 +7,7 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-public class FIFOScheduler extends Thread implements Scheduler  {
+public class FIFOScheduler implements Scheduler  {
 
 	// private class StartTimeComparator implements Comparator<JobInfo.TaskInfo> {
 	// 	public int compare(JobInfo.TaskInfo j1, JobInfo.TaskInfo j2) {
@@ -26,6 +26,8 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 
 	private JobInfo.TaskInfo curr = null;
 
+	private RoutineSchedule routine = null;
+
 	public void schedule(JobInfo.TaskInfo[] tasks) {
 		if (tasks == null)
             throw new NullPointerException("job is null");
@@ -36,19 +38,15 @@ public class FIFOScheduler extends Thread implements Scheduler  {
         	
 	}
 
-	public void threadStart() {
-		this.start();
-	}
-
-	public void threadJoin() {
+	public void join() {
 		try {
-			this.join();
+			routine.join();
 		} catch (InterruptedException ie) {
     		System.out.println("Exception thrown  :" + ie);
     	}
 	}
 
-	public void threadStop() {
+	public void stop() {
 		stopSign = true;
 	}
 
@@ -60,50 +58,57 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 		return queue.size();
 	}
 
-	public boolean threadAlive() {
-		return this.isAlive();
+	public boolean isAlive() {
+		return routine.isAlive();
 	}
 
-	public boolean threadInterrupted() {
-		return this.isInterrupted();
+	public boolean isInterrupted() {
+		return routine.isInterrupted();
 	}
 
-	public void run() {
-		Set<Integer> prefs = null;
-		PriorityBlockingQueue<SlotsLeft> queueLeft = null;
-		while (!stopSign) {
+	public void start() {
+		routine = new RoutineSchedule();
+	}
 
-			if (networkInstance.hasAvailableSlots() && queue.peek() != null) {
-                curr = queue.poll();
-                System.out.println("start scheduling task: " + curr.toString());
-				if (curr.taskType == true)
-					prefs = curr.getMapPrefs();
-				else
-				 	prefs = curr.getReducePrefs(); // assume it not empty
+	class RoutineSchedule extends Thread {
 
-				queueLeft = curr.getRackLocality();
+		public void run() {
+			Set<Integer> prefs = null;
+			PriorityBlockingQueue<SlotsLeft> queueLeft = null;
+			while (!stopSign) {
 
-				boolean found = false;
-				for (Integer i : prefs)
-					if (networkInstance.checkSlotsAtNode(i)) {
-						curr.nodeIndex = i;
-						found = true;
-						break;								
+				if (networkInstance.hasAvailableSlots() && queue.peek() != null) {
+                	curr = queue.poll();
+	                System.out.println("start scheduling task: " + curr.toString());
+					if (curr.taskType == true)
+						prefs = curr.getMapPrefs();
+					else
+					 	prefs = curr.getReducePrefs(); // assume it not empty
+
+					queueLeft = curr.getRackLocality();
+
+					boolean found = false;
+					for (Integer i : prefs)
+						if (networkInstance.checkSlotsAtNode(i)) {
+							curr.nodeIndex = i;
+							found = true;
+							break;								
+						}
+					for (SlotsLeft i : queueLeft)
+						if (networkInstance.checkSlotsAtNode(i.machineNumber)) {
+							curr.nodeIndex = i.machineNumber;
+							found = true;
+							break;								
+						}
+
+					if (!found) {
+						int r = networkInstance.pickUpOneSlotRandom();
+						curr.nodeIndex = r;
+						curr.setReducePrefs();
 					}
-				for (SlotsLeft i : queueLeft)
-					if (networkInstance.checkSlotsAtNode(i.machineNumber)) {
-						curr.nodeIndex = i.machineNumber;
-						found = true;
-						break;								
-					}
-
-				if (!found) {
-					int r = networkInstance.pickUpOneSlotRandom();
-					curr.nodeIndex = r;
-					curr.setReducePrefs();
+					timer.scheduleTask(curr);
 				}
-				timer.scheduleTask(curr);
 			}
 		}
-	}
+    }
 }

@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-public class DelayScheduler extends Thread implements Scheduler  {
+public class DelayScheduler implements Scheduler  {
 
 	private class StartTimeComparator implements Comparator<JobInfo.TaskInfo> {
 		public int compare(JobInfo.TaskInfo j1, JobInfo.TaskInfo j2) {
@@ -22,6 +22,8 @@ public class DelayScheduler extends Thread implements Scheduler  {
 	private Timer timer = null;
 
 	private boolean stopSign = false;
+
+	private RoutineSchedule routine = null;
 
 	public DelayScheduler() {
 		StartTimeComparator atc = new StartTimeComparator();
@@ -65,19 +67,15 @@ public class DelayScheduler extends Thread implements Scheduler  {
  //            }       
  //        }	
 	// }
-	public void threadStart() {
-		this.start();
-	}
-
-	public void threadJoin() {
+	public void join() {
 		try {
-			this.join();
+			routine.join();
 		} catch (InterruptedException ie) {
     		System.out.println("Exception thrown  :" + ie);
     	}
 	}
 
-	public void threadStop() {
+	public void stop() {
 		stopSign = true;
 	}
 
@@ -89,13 +87,22 @@ public class DelayScheduler extends Thread implements Scheduler  {
 		return queue.size();
 	}
 
-
-	public boolean threadAlive() {
-		return this.isAlive();
+	public boolean isAlive() {
+		return routine.isAlive();
 	}
 
-	public boolean threadInterrupted() {
-		return this.isInterrupted();
+	public boolean isInterrupted() {
+		return routine.isInterrupted();
+	}
+
+	public void start() {
+		routine = new RoutineSchedule();
+	}
+
+	class RoutineSchedule extends Thread {
+		public void run() {
+
+		}
 	}
 
 }

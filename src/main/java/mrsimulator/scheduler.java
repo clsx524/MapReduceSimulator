@@ -4,18 +4,18 @@ interface Scheduler {
 
 	public void schedule(JobInfo.TaskInfo[] tasks);
 
-	public void threadStart();
+	public void start();
 
-	public void threadJoin();
+	public void join();
 
-	public void threadStop();
+	public void stop();
 
 	public void setTimer();
 
 	public int getQueueSize();
 
-	public boolean threadAlive();
+	public boolean isAlive();
 
-	public boolean threadInterrupted();
+	public boolean isInterrupted();
 
 }

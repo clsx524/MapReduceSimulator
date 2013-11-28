@@ -98,7 +98,7 @@ public class NetworkSimulator extends Thread {
             		finished++;
             		profile.print(curr);
             		if (finished == Configure.total) {
-            			schedulerInstance.threadStop();
+            			schedulerInstance.stop();
             			stopSign = true;
             		}
             	} else if (curr.reduceStarted == false && curr.prog() >= Configure.reduceStartPercentage) {
