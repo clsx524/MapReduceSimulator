@@ -89,4 +89,13 @@ public class DelayScheduler extends Thread implements Scheduler  {
 		return queue.size();
 	}
 
+
+	public boolean threadAlive() {
+		return this.isAlive();
+	}
+
+	public boolean threadInterrupted() {
+		return this.isInterrupted();
+	}
+
 }

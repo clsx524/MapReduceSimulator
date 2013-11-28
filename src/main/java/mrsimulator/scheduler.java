@@ -14,4 +14,8 @@ interface Scheduler {
 
 	public int getQueueSize();
 
+	public boolean threadAlive();
+
+	public boolean threadInterrupted();
+
 }

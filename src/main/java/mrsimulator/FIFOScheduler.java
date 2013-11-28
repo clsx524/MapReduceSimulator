@@ -60,6 +60,14 @@ public class FIFOScheduler extends Thread implements Scheduler  {
 		return queue.size();
 	}
 
+	public boolean threadAlive() {
+		return this.isAlive();
+	}
+
+	public boolean threadInterrupted() {
+		return this.isInterrupted();
+	}
+
 	public void run() {
 		Set<Integer> prefs = null;
 		PriorityBlockingQueue<SlotsLeft> queueLeft = null;

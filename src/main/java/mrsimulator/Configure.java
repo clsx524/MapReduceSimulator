@@ -24,6 +24,6 @@ public final class Configure {
 
 	public static long initialTime;
 
-	public final static int progressCheckPeriod = 5000;
+	public final static int progressCheckPeriod = 10000;
 
 }
