@@ -1,5 +1,6 @@
 package mrsimulator;
 
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.Deque;
 import java.util.Random;
@@ -72,42 +73,46 @@ public class NetworkSimulator extends Thread {
 		return machinesPerRack * racks;
 	}
 
-	public boolean notifyFinish(JobInfo.TaskInfo task) {
-		if (!checkProgress.contains(task.getJob()) && !task.getJob().finished) {
-			checkProgress.offer(task.getJob());
-			return true;
-		}
-		return false;
+	public int checkProgressSize() {
+		return checkProgress.size();
+	}
+
+	public void jobStarted(JobInfo job) {
+		checkProgress.offer(job);
 	}
 
 	public void run() {
 
         while (!stopSign) {
-        	try {
-            	netSemaphore.release();
-        	} catch (InterruptedException ie) {
-                System.out.println("Exception thrown  :" + ie);
-            }
+        	// try {
+         //    	netSemaphore.release();
+        	// } catch (InterruptedException ie) {
+         //        System.out.println("Exception thrown  :" + ie);
+         //    }
             while (checkProgress.size() > 0) {
-             	curr = checkProgress.poll();
-
-  				if (curr == null || curr.finished == true)
-  					continue;
-            	if (curr.isFinished()) {
-            		System.out.println("Job finished: " + curr.jobID);
-            		finished++;
-            		profile.print(curr);
-            		if (finished == Configure.total) {
-            			schedulerInstance.stop();
-            			stopSign = true;
+            	Iterator<JobInfo> it = checkProgress.iterator();
+            	while(it.hasNext()) {
+            		JobInfo curr = it.next();
+            		curr.updateProgress();
+            		if (curr.isFinished()) {
+            			System.out.println("Job finished: " + curr.jobID);
+            			finished++;
+            			checkProgress.remove(curr);
+	            		curr.setJobEndTime();
+    	        		profile.print(curr);
+        	    		if (finished == Configure.total) {
+            				schedulerInstance.stop();
+            				stopSign = true;
+            			}
+	            	} else if (curr.finished == false && curr.reduceStarted == false && curr.prog() >= Configure.reduceStartPercentage) {
+    	        		//System.out.println("Map almost finished: " + curr.jobID);
+        	    		schedulerInstance.schedule(curr.reduces);
+            			curr.reduceStarted = true;
             		}
-            	} else if (curr.reduceStarted == false && curr.prog() >= Configure.reduceStartPercentage) {
-            		System.out.println("Map almost finished: " + curr.jobID);
-            		schedulerInstance.schedule(curr.reduces);
-            		curr.reduceStarted = true;
-            	}           	
+            	}       	
             }
         }
+        System.out.println("NetworkSimulator has terminated safely");
 	}
 
 	public synchronized int pickUpOneSlotRandom() {
@@ -123,20 +128,30 @@ public class NetworkSimulator extends Thread {
 	}
 
 	public synchronized void occupyOneSlotAtNode(Integer index) {
-		if (node2Left.get(index).left < 1)
+		SlotsLeft sr = node2Left.get(index);
+		if (sr.left < 1)
 			throw new IllegalArgumentException("Out of free slots to use");
-		node2Left.get(index).left--;			
+		queue.remove(sr);
+		sr.left--;
+		queue.offer(sr);		
 	}
 
 	public synchronized void addOneSlotAtNode(Integer index) {
-		if (node2Left.get(index).left + 1 > slotsPerNode)
+		SlotsLeft sr = node2Left.get(index);
+		if (sr.left + 1 > slotsPerNode)
 			throw new IllegalArgumentException("Out of bound of total slots");
-		node2Left.get(index).left++;
+		queue.remove(sr);
+		sr.left++;
+		queue.offer(sr);
 	}
 
-	public boolean hasAvailableSlots() {
+	public synchronized boolean hasAvailableSlots() {
 		if (queue.peek() != null && queue.peek().left > 0)
 			return true;
 		return false;
+	}
+
+	public String getQueue() {
+		return queue.toString();
 	}
 }

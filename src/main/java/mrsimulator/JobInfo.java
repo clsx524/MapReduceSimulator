@@ -20,7 +20,7 @@ public class JobInfo {
 		public boolean taskType = true; // true MAP; false REDUCE
 
 		public String toString() {
-			return jobID + " " + taskID + " " + duration + " " + fileSize + " " + nodeIndex + " " + startTime + " " + endTime + " " + taskType + " " + mapProgress + " " + reduceProgress;
+			return jobID + " " + taskID + " " + duration + " " + fileSize + " " + nodeIndex + " " + startTime + " " + endTime + " " + taskType + " " + mapProgress + " " + reduceProgress + " " + mapNumber + " " + reduceNumber;
 		}
 
 		public Integer getMapNumber() {
@@ -35,12 +35,12 @@ public class JobInfo {
 		public Integer getReduceProgress() {
 			return reduceProgress;
 		}
-		public void setMapProgress() {
-			mapProgress++;
-		}		
-		public void setReduceProgress() {
-			reduceProgress++;
-		}	
+		// public synchronized void setMapProgress() {
+		// 	mapProgress++;
+		// }		
+		// public synchronized void setReduceProgress() {
+		// 	reduceProgress++;
+		// }	
 		public TaskInfo[] getReduces() {
 			return reduces;
 		}	
@@ -49,9 +49,6 @@ public class JobInfo {
 		}
 		public int getTotalTasksNumber() {
 			return mapNumber + reduceNumber;
-		}
-		public void setJobEndTime() {
-			JobInfo.this.endTime = endTime;
 		}
 		public void setDuration(double d) {
 			duration = (long) d;
@@ -89,8 +86,8 @@ public class JobInfo {
 	public Long reduceOutputBytes = -1L;
 	//public Long inputNode = -1L; 
 
-	public Integer mapNumber;
-	public Integer reduceNumber;
+	public Integer mapNumber = 0;
+	public Integer reduceNumber = 0;
 
 	public Integer mapProgress = 0;
 	public Integer reduceProgress = 0;
@@ -178,17 +175,32 @@ public class JobInfo {
 	}
 
 	public boolean isFinished() {
-		if (mapNumber == mapProgress && reduceNumber == reduceProgress) {
+		if (finished == true)
+			return true;
+		if (mapNumber.equals(mapProgress) && reduceNumber.equals(reduceProgress)) {
 			finished = true;
 			return true;
 		}
 		return false;
 	}
 
+	public void updateProgress() {
+		int mp = 0;
+		int rp = 0;
+		for (int i = 0; i < mapNumber; i++)
+			if (maps[i].progress == true)
+				mp++;
+		for (int i = 0; i < reduceNumber; i++)
+			if (reduces[i].progress == true)
+				rp++;	
+		mapProgress = mp;
+		reduceProgress = rp;	
+		//System.out.println("Progress: " + mapProgress + " " + reduceProgress);
+	}
+
 	public double prog() {
 		return (mapProgress.doubleValue() / mapNumber.doubleValue());
 	}
-
 
 	public String jobToString() {
 		return "Job: " + jobID + " " + arrivalTime + " " + startTime + " " + endTime + " " + mapInputBytes + " " + shuffleBytes + " " + reduceOutputBytes + " " + mapPrefs.size() + " " + reducePrefs.size();
@@ -200,5 +212,8 @@ public class JobInfo {
 
 	public String reduceTaskToString(int i) {
 		return "	Task: " + reduces[i].toString();
+	}
+	public void setJobEndTime() {
+		endTime = System.currentTimeMillis() - Configure.initialTime;
 	}
 }

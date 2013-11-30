@@ -106,20 +106,26 @@ public class SimulatorEngine {
 	public void join() {
 		try {
     	// find all threads finish, stop them
+			int i = 0;
 			while (Configure.total != networkInstance.finished) { 
-				System.out.println("************* Current Status Summary *************");
+				System.out.println("************ Current Status Summary ************");
+				System.out.println("Current time: " + Configure.progressCheckPeriod*i);
 				System.out.println("Scheduler alive: " + schedulerInstance.isAlive() + "; Interrupted: " + schedulerInstance.isInterrupted());
 				System.out.println("NetworkSimulator alive: " + networkInstance.isAlive() + "; Interrupted: " + networkInstance.isInterrupted());
-				System.out.println("Total Finished Jobs: " + networkInstance.finished + " total: " + Configure.total);
-				System.out.println("Timer queue size: " + timer.timerQueue.getQueue().size() + " Schuduler queue size: " + schedulerInstance.getQueueSize());
+				System.out.println("Total Finished Jobs: " + networkInstance.finished + " Total Number of Jobs: " + Configure.total);
+				System.out.println("Timer queue size: " + timer.jobQueue.getQueue().size() + " # " + timer.taskQueue.getQueue().size() + "; Scheduler queue size: " + schedulerInstance.getQueueSize());
 				System.out.println("Slots available: " + networkInstance.hasAvailableSlots());
 				System.out.println("Scheduler failure times: " + schedulerInstance.failureTimes());
-				System.out.println("*************=*************=*************");
-
+				System.out.println("Timer schedule times: " + timer.totalTimes);
+				System.out.println("CheckProgress size: " + networkInstance.checkProgressSize());
+				//System.out.println("Print all progress: \n" + networkInstance.printProgress());
+				System.out.println("************************************************");
+				//System.out.println(networkInstance.getQueue());
 				if (!schedulerInstance.isAlive())
 					schedulerInstance.start();
 
-				Thread.sleep(Configure.progressCheckPeriod); 
+				Thread.sleep(Configure.progressCheckPeriod);
+				i++;
 			}
 			System.out.println("All Jobs finished");
     		timer.join();
