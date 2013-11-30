@@ -87,7 +87,6 @@ public class FIFOScheduler implements Scheduler  {
 
 				if (networkInstance.hasAvailableSlots() && queue.peek() != null) {
                 	curr = queue.poll();
-	                //System.out.println("start scheduling task: " + curr.toString());
 					if (curr.taskType == true)
 						prefs = curr.getMapPrefs();
 					else

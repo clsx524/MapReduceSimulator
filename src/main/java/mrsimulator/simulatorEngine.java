@@ -26,8 +26,6 @@ public class SimulatorEngine {
 
 	private Random rd = new Random(System.currentTimeMillis());
 
-	private BoundedSemaphore netSemaphore = null;
-
 	private Profiler profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/", "TasksPreview"); 
 
 	public SimulatorEngine() {
@@ -46,15 +44,12 @@ public class SimulatorEngine {
 		}
 		readInputFile();
 
-		/************* Init Semaphore *************/
-		netSemaphore = new BoundedSemaphore(Configure.sepmaphoreBound);
-
 		/************* Init topology *************/
 		topology = TopologyFactory.newInstance(Configure.topologyType);
 		topology.genTop();
 
 		/************* Init network *************/
-		networkInstance = NetworkSimulator.newInstance(netSemaphore);
+		networkInstance = NetworkSimulator.newInstance();
 		networkInstance.setTopology(topology, Configure.slotsPerNode);
 
 		/************* Init scheduler *************/
@@ -67,7 +62,7 @@ public class SimulatorEngine {
 		dfs.updateTaskNumber(allJobs);
 
 		/************* Init timer *************/
-		timer = Timer.newInstance(netSemaphore);
+		timer = Timer.newInstance();
 		schedulerInstance.setTimer();
 
 		/************* Init all services *************/
@@ -118,9 +113,7 @@ public class SimulatorEngine {
 				System.out.println("Scheduler failure times: " + schedulerInstance.failureTimes());
 				System.out.println("Timer schedule times: " + timer.totalTimes);
 				System.out.println("CheckProgress size: " + networkInstance.checkProgressSize());
-				//System.out.println("Print all progress: \n" + networkInstance.printProgress());
 				System.out.println("************************************************");
-				//System.out.println(networkInstance.getQueue());
 				if (!schedulerInstance.isAlive())
 					schedulerInstance.start();
 

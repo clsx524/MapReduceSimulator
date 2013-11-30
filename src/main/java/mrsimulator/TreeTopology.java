@@ -1,8 +1,6 @@
 package mrsimulator;
 
 class TreeTopology extends Topology {
-	// public int machinesPerRack;
-	// public int racks;
 	public int racksPerL2;
 	public int l2Switch;
 	public int l2PerAggr;

@@ -34,12 +34,9 @@ public class NetworkSimulator extends Thread {
 
 	private boolean stopSign = false;
 
-	private BoundedSemaphore netSemaphore = null;
-
 	public long finished = 0L;
 
-	private NetworkSimulator(BoundedSemaphore net) {
-		netSemaphore = net;
+	private NetworkSimulator() {
 	}
 
 	public void setScheduler() {
@@ -63,9 +60,9 @@ public class NetworkSimulator extends Thread {
 		return instance;
 	}
 
-	public static NetworkSimulator newInstance(BoundedSemaphore net) {
+	public static NetworkSimulator newInstance() {
 		if (instance == null)
-			instance = new NetworkSimulator(net);
+			instance = new NetworkSimulator();
 		return instance;
 	}
 
@@ -84,11 +81,6 @@ public class NetworkSimulator extends Thread {
 	public void run() {
 
         while (!stopSign) {
-        	// try {
-         //    	netSemaphore.release();
-        	// } catch (InterruptedException ie) {
-         //        System.out.println("Exception thrown  :" + ie);
-         //    }
             while (checkProgress.size() > 0) {
             	Iterator<JobInfo> it = checkProgress.iterator();
             	while(it.hasNext()) {
@@ -105,7 +97,6 @@ public class NetworkSimulator extends Thread {
             				stopSign = true;
             			}
 	            	} else if (curr.finished == false && curr.reduceStarted == false && curr.prog() >= Configure.reduceStartPercentage) {
-    	        		//System.out.println("Map almost finished: " + curr.jobID);
         	    		schedulerInstance.schedule(curr.reduces);
             			curr.reduceStarted = true;
             		}

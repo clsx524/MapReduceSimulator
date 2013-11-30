@@ -26,21 +26,12 @@ public class JobInfo {
 		public Integer getMapNumber() {
 			return mapNumber;
 		}
-		// public Double getReduceNumber() {
-		// 	return reduceNumber;
-		// }
 		public Integer getMapProgress() {
 			return mapProgress;
 		}
 		public Integer getReduceProgress() {
 			return reduceProgress;
 		}
-		// public synchronized void setMapProgress() {
-		// 	mapProgress++;
-		// }		
-		// public synchronized void setReduceProgress() {
-		// 	reduceProgress++;
-		// }	
 		public TaskInfo[] getReduces() {
 			return reduces;
 		}	
@@ -195,7 +186,6 @@ public class JobInfo {
 				rp++;	
 		mapProgress = mp;
 		reduceProgress = rp;	
-		//System.out.println("Progress: " + mapProgress + " " + reduceProgress);
 	}
 
 	public double prog() {
