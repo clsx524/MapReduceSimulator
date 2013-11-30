@@ -5,5 +5,7 @@ public class Main {
     	SimulatorEngine se = new SimulatorEngine();
     	se.scheduleAllJobs();
     	se.join();
+
+    	System.exit(0);
     }	
 }

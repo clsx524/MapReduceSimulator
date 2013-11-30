@@ -1,6 +1,7 @@
 package mrsimulator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -20,7 +21,7 @@ public class JobInfo {
 		public boolean taskType = true; // true MAP; false REDUCE
 
 		public String toString() {
-			return jobID + " " + taskID + " " + duration + " " + fileSize + " " + nodeIndex + " " + startTime + " " + endTime + " " + taskType + " " + mapProgress + " " + reduceProgress + " " + mapNumber + " " + reduceNumber;
+			return jobID + " " + taskID + " " + duration + " " + fileSize + " " + nodeIndex + " " + startTime + " " + endTime + " " + taskType;
 		}
 
 		public Integer getMapNumber() {
@@ -193,7 +194,7 @@ public class JobInfo {
 	}
 
 	public String jobToString() {
-		return "Job: " + jobID + " " + arrivalTime + " " + startTime + " " + endTime + " " + mapInputBytes + " " + shuffleBytes + " " + reduceOutputBytes + " " + mapPrefs.size() + " " + reducePrefs.size();
+		return "Job: " + jobID + " " + arrivalTime + " " + startTime + " " + endTime + " " + mapInputBytes + " " + shuffleBytes + " " + reduceOutputBytes + " " + mapPrefs.size() + " " + reducePrefs.size() + " " + Arrays.toString(mapPrefs.toArray()) + " " + Arrays.toString(reducePrefs.toArray());
 	}
 
 	public String mapTaskToString(int i) {

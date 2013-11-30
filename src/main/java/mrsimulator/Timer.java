@@ -43,7 +43,7 @@ public class Timer {
     public void scheduleJob(JobInfo job) {
         jobQueue.schedule(new JobAfterTimerDone(job), job.arrivalTime, TimeUnit.SECONDS);
         totalTimes++;
-        networksimulator.jobStarted(job);
+        
     }
 
     public void scheduleTask(JobInfo.TaskInfo task) {
@@ -71,6 +71,8 @@ public class Timer {
         }
 
         public void run() {
+            networksimulator.jobStarted(job);
+            job.startTime = System.currentTimeMillis() - Configure.initialTime;
             scheduler.schedule(job.maps);
         }
     }

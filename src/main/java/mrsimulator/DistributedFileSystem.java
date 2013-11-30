@@ -52,12 +52,17 @@ public class DistributedFileSystem {
 
 	private void replicationPlacement(JobInfo job, int rack) {
 		int i = 0;
-		while (i < replicaNumber) {
+		while (i < replicaNumber-1) {
 			int j = rd.nextInt(machinesPerRack) + rack * machinesPerRack;
 			boolean res = job.mapPrefs.add(j);
 			if (res == true)
 				i++;
 		}
+		int j = rack;
+		while (j == rack) {
+			j = rd.nextInt(racks);
+		}
+		boolean res = job.mapPrefs.add(rd.nextInt(machinesPerRack) + j * machinesPerRack);
 	}
 
 	public void updateTaskNumber(ArrayList<JobInfo> alljobs) {

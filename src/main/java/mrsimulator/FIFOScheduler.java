@@ -36,8 +36,7 @@ public class FIFOScheduler implements Scheduler  {
 
        	for (JobInfo.TaskInfo task : tasks) {
        		queue.offer(task);
-       	}
-        	
+       	} 	
 	}
 
 	public void join() {
@@ -86,6 +85,7 @@ public class FIFOScheduler implements Scheduler  {
 			while (!stopSign) {
 
 				if (networkInstance.hasAvailableSlots() && queue.peek() != null) {
+					prefs = null;
                 	curr = queue.poll();
 					if (curr.taskType == true)
 						prefs = curr.getMapPrefs();
@@ -101,18 +101,22 @@ public class FIFOScheduler implements Scheduler  {
 							found = true;
 							break;								
 						}
-					for (SlotsLeft i : queueLeft)
-						if (networkInstance.checkSlotsAtNode(i.machineNumber)) {
-							curr.nodeIndex = i.machineNumber;
-							found = true;
-							break;								
-						}
 
+					if (!found) {
+						for (SlotsLeft i : queueLeft)
+							if (networkInstance.checkSlotsAtNode(i.machineNumber)) {
+								curr.nodeIndex = i.machineNumber;
+								found = true;
+								break;								
+							}
+					}
+	
 					if (!found) {
 						int r = networkInstance.pickUpOneSlotRandom();
 						curr.nodeIndex = r;
-						curr.setReducePrefs();
 					}
+					if (curr.taskType == true)
+						curr.setReducePrefs();
 					timer.scheduleTask(curr);
 				}
 			}
