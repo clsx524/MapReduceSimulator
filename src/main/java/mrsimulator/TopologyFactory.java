@@ -7,7 +7,10 @@ public class TopologyFactory {
 	public static Topology newInstance(String type) {
 		if (type.equals("TreeTopology"))
 			topologyInstance = new TreeTopology();
-		//else if (type.equals(""))
+		else if (type.equals("VL2Topology"))
+			topologyInstance = new VL2Topology();
+		else if (type.equals("FatTreeTopology"))
+			topologyInstance = new FatTreeTopology();
 		else
 			throw new IllegalArgumentException("Invalid Topology Type");
 		return topologyInstance;

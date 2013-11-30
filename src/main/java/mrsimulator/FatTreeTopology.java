@@ -1,6 +1,6 @@
 package mrsimulator;
 
-class VL2Topology extends Topology {
+class FatTreeTopology extends Topology {
 	public int racksPerAggr;
 	public int aggrSwitch;
 	public int l3Core;
@@ -10,17 +10,17 @@ class VL2Topology extends Topology {
 
 	private Profiler profile = null;
 
-	public VL2Topology() {
+	public FatTreeTopology() {
 		machinesPerRack = Configure.machinesPerRack;
 		racks = Configure.racks;
 		racksPerAggr = 2;
 		aggrSwitch = racks;
-		l3Core = aggrSwitch / 2;
+		l3Core = 20;
 
 		rackSpeed = 1;
 		linkSpeed = 10;
 
-		profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/Results/", "VL2Topology");
+		profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/Results/", "FatTreeTopology");
 	}
 
 	public void genTop() {
@@ -38,8 +38,9 @@ class VL2Topology extends Topology {
 		}
 
 		for (int i = 0; i < aggrSwitch; i++) {
-			for (int j = 0; j < l3Core; j++)
-				profile.print2ln("aggrSwitch" + i, "l3Core" + j);
+			int group = i % 2;
+			for (int j = 0; j < l3Core / 2; j++)
+				profile.print2ln("aggrSwitch" + i, "l3Core" + (group*l3Core/2 + j));
 		}		
 	}
 

@@ -26,7 +26,7 @@ public class SimulatorEngine {
 
 	private Random rd = new Random(System.currentTimeMillis());
 
-	private Profiler profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/", "TasksPreview"); 
+	//private Profiler profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/", "TasksPreview"); 
 
 	public SimulatorEngine() {
 		init();
@@ -94,7 +94,7 @@ public class SimulatorEngine {
 		Configure.initialTime = System.currentTimeMillis();
     	for (JobInfo job : allJobs) {
     		timer.scheduleJob(job);	
-    		profile.print(job);
+    		//profile.print(job);
     	}
 	}
 
