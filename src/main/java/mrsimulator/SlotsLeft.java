@@ -1,6 +1,6 @@
 package mrsimulator;
 
-public class SlotsLeft implements Comparable<SlotsLeft>{
+public class SlotsLeft implements Comparable<SlotsLeft> {
 	public int machineNumber;
 	public int left;
 

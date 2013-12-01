@@ -39,6 +39,9 @@ public class JobInfo {
 		public JobInfo getJob() {
 			return JobInfo.this;
 		}
+		public Integer getJobID() {
+			return jobID;
+		}
 		public int getTotalTasksNumber() {
 			return mapNumber + reduceNumber;
 		}
@@ -89,6 +92,8 @@ public class JobInfo {
 
 	public boolean reduceStarted = false;
 	public boolean finished = false;
+
+	public PoolSchedulable ps = null;
 
 	//private ArrayList<Long> replica = new ArrayList<Long>();
 

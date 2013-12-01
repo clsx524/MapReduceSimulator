@@ -1,45 +1,49 @@
 package mrsimulator;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class DelayScheduler implements Scheduler  {
 
-	private class StartTimeComparator implements Comparator<JobInfo.TaskInfo> {
-		public int compare(JobInfo.TaskInfo j1, JobInfo.TaskInfo j2) {
-	 		if (j1.getTotalTasksNumber() <= j2.getTotalTasksNumber())
-	 			return 1;
-	 		else
-	 			return -1;
-	 	}
-	}
-
-	private Queue<JobInfo.TaskInfo> queue = null;
+	private Queue<PoolSchedulable> queuePool = new PriorityBlockingQueue<PoolSchedulable>(1);
 
 	private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
 
 	private Timer timer = null;
+	
+	private boolean contained = false;
 
 	private boolean stopSign = false;
+
+	private JobInfo.TaskInfo curr = null;
 
 	private RoutineSchedule routine = null;
 
 	private int failure = -1;
 
-	public DelayScheduler() {
-		StartTimeComparator atc = new StartTimeComparator();
-		queue = new PriorityBlockingQueue<JobInfo.TaskInfo>(1,atc);
-	}
-
 	public void schedule(JobInfo.TaskInfo[] tasks) {
+		
 		if (tasks == null)
-            throw new NullPointerException("tasks is null");
+            throw new NullPointerException("job is null");
 
-        for (JobInfo.TaskInfo task : tasks)
-        	queue.offer(task);
+        JobInfo job = tasks[0].getJob();
+        if (job.ps == null)
+			job.ps = new PoolSchedulable(tasks[0].getJobID());
+		else {
+			queuePool.remove(job.ps);
+        }
+		for(JobInfo.TaskInfo task : tasks){
+				job.ps.addTask(task);
+		}
+		queuePool.offer(job.ps);
 	}
-	
+
 	public void join() {
 		try {
 			routine.join();
@@ -57,7 +61,7 @@ public class DelayScheduler implements Scheduler  {
 	}
 
 	public int getQueueSize() {
-		return queue.size();
+		return queuePool.size();
 	}
 
 	public boolean isAlive() {
@@ -79,9 +83,54 @@ public class DelayScheduler implements Scheduler  {
 	}
 
 	class RoutineSchedule extends Thread {
+
 		public void run() {
+			Set<Integer> prefs = null;
+			PriorityBlockingQueue<SlotsLeft> queueLeft = null;
+			while (!stopSign) {
 
+				if (networkInstance.hasAvailableSlots() && queuePool.peek() != null) {
+            		
+                	PoolSchedulable tempPool = queuePool.poll();
+                	curr = tempPool.getTask();
+                	if (tempPool.runningTasks == 0)
+                		tempPool = null;
+                	else
+                		queuePool.offer(tempPool);
+
+					if (curr.taskType == true)
+						prefs = curr.getMapPrefs();
+					else
+					 	prefs = curr.getReducePrefs(); // assume it not empty
+
+					queueLeft = curr.getRackLocality();
+
+					boolean found = false;
+					for (Integer i : prefs)
+						if (networkInstance.checkSlotsAtNode(i)) {
+							curr.nodeIndex = i;
+							found = true;
+							break;								
+						}
+
+					if (!found) {
+						for (SlotsLeft i : queueLeft)
+							if (networkInstance.checkSlotsAtNode(i.machineNumber)) {
+								curr.nodeIndex = i.machineNumber;
+								found = true;
+								break;								
+							}
+					}
+	
+					if (!found) {
+						int r = networkInstance.pickUpOneSlotRandom();
+						curr.nodeIndex = r;
+					}
+					if (curr.taskType == true)
+						curr.setReducePrefs();
+					timer.scheduleTask(curr);
+				}
+			}
 		}
-	}
-
+    }
 }
