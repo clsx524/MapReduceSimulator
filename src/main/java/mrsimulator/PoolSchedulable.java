@@ -5,12 +5,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class PoolSchedulable implements Comparable<PoolSchedulable> {
 	
-	public Integer jobID;
 	public long runningTasks;
 	public Queue <JobInfo.TaskInfo> jobQueue = null;
 	
-	public PoolSchedulable (Integer jid){
-		jobID = jid;
+	public PoolSchedulable (){
 		runningTasks = 0;
 		jobQueue = new LinkedBlockingQueue<JobInfo.TaskInfo>();
 	}

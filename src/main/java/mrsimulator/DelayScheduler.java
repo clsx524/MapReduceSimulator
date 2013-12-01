@@ -16,8 +16,6 @@ public class DelayScheduler implements Scheduler  {
 	private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
 
 	private Timer timer = null;
-	
-	private boolean contained = false;
 
 	private boolean stopSign = false;
 
@@ -34,7 +32,7 @@ public class DelayScheduler implements Scheduler  {
 
         JobInfo job = tasks[0].getJob();
         if (job.ps == null)
-			job.ps = new PoolSchedulable(tasks[0].getJobID());
+			job.ps = new PoolSchedulable();
 		else {
 			queuePool.remove(job.ps);
         }
