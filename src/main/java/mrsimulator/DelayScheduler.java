@@ -33,11 +33,11 @@ public class DelayScheduler implements Scheduler  {
         JobInfo job = tasks[0].getJob();
         if (job.ps == null)
 			job.ps = new PoolSchedulable();
-		else {
+		else
 			queuePool.remove(job.ps);
-        }
+        
 		for(JobInfo.TaskInfo task : tasks){
-				job.ps.addTask(task);
+			job.ps.addTask(task);
 		}
 		queuePool.offer(job.ps);
 	}

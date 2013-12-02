@@ -1,14 +1,30 @@
 package mrsimulator;
 
 import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class PoolSchedulable implements Comparable<PoolSchedulable> {
 	
 	public long runningTasks;
 	public Queue <JobInfo.TaskInfo> jobQueue = null;
+	public boolean type;
+
+	public Set<Integer> getPrefs() {
+		if (runningTasks == 0)
+			throw new IllegalArgumentException("PoolSchedulable is empty");
+		if (type)
+			return jobQueue.peek().getMapPrefs();
+		else
+			return jobQueue.peek().getReducePrefs();
+	}
+
+	public PriorityBlockingQueue<SlotsLeft> getRackLocality() {
+		return jobQueue.peek().getRackLocality();
+	}
 	
-	public PoolSchedulable (){
+	public PoolSchedulable() {
 		runningTasks = 0;
 		jobQueue = new LinkedBlockingQueue<JobInfo.TaskInfo>();
 	}

@@ -9,6 +9,8 @@ public class SchedulerFactory {
 			schedulerInstance = new FIFOScheduler();
 		else if (type.equals("DelayScheduler"))
 			schedulerInstance = new DelayScheduler();
+		else if (type.equals("QuincyScheduler"))
+			schedulerInstance = new QuincyScheduler();
 		else
 			throw new IllegalArgumentException("Invalid Scheduler Type");
 		return schedulerInstance;

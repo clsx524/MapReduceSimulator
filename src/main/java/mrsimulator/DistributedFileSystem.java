@@ -52,6 +52,7 @@ public class DistributedFileSystem {
 
 	private void replicationPlacement(JobInfo job, int rack) {
 		int i = 0;
+		int expectedExtraReplica = job.mapNumber / Configure.slotsPerNode / Configure.machinesPerRack + Configure.replicaDelta;
 		while (i < replicaNumber-1) {
 			int j = rd.nextInt(machinesPerRack) + rack * machinesPerRack;
 			boolean res = job.mapPrefs.add(j);
@@ -63,6 +64,17 @@ public class DistributedFileSystem {
 			j = rd.nextInt(racks);
 		}
 		boolean res = job.mapPrefs.add(rd.nextInt(machinesPerRack) + j * machinesPerRack);
+
+		i = 0;
+		if (expectedExtraReplica > replicaNumber) {
+			while (i < expectedExtraReplica - replicaNumber) {
+				int k = rd.nextInt(racks);
+				if (k != rack && k != j) {
+					job.mapPrefs.add(k*machinesPerRack+rd.nextInt(machinesPerRack));
+					i++;
+				}			
+			}
+		}
 	}
 
 	public void updateTaskNumber(ArrayList<JobInfo> alljobs) {

@@ -1,7 +1,7 @@
 package mrsimulator;
 
 public final class Configure {
-	public final static String schedulerType = "DelayScheduler"; // "FIFOScheduler";
+	public final static String schedulerType = "QuincyScheduler"; // "FIFOScheduler"; // "DelayScheduler";
 	public final static String topologyType = "TreeTopology"; // "FatTreeTopology";// "VL2Topology";  // "TreeTopology";
 	public final static int corePoolSize = 12000;//Integer.MAX_VALUE;
 	public final static int timerLimit = 12000;
@@ -26,5 +26,8 @@ public final class Configure {
 	public static long initialTime;
 
 	public final static int progressCheckPeriod = 10000;
+
+	public static int replicaBudget;
+	public static int replicaDelta = 2;
 
 }

@@ -58,8 +58,8 @@ public class SimulatorEngine {
 
 		/************* Init distributed file system *************/
 		dfs = DistributedFileSystem.newInstance(Configure.replica, Configure.blockSize);
-		dfs.updatePrefs(allJobs);
 		dfs.updateTaskNumber(allJobs);
+		dfs.updatePrefs(allJobs);
 
 		/************* Init timer *************/
 		timer = Timer.newInstance();
@@ -78,6 +78,7 @@ public class SimulatorEngine {
            		allJobs.add(parseJob(line));
         	inputReader.close();
         	Configure.total = allJobs.size();
+        	Configure.replicaBudget = Configure.total * 10;
 		} catch (IOException io) {
 			System.out.println("Exception thrown  :" + io);
 		}
