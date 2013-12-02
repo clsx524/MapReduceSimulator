@@ -25,7 +25,7 @@ class TreeTopology extends Topology {
 		rackSpeed = 1;
 		linkSpeed = 10;
 
-		profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/Results/", "TreeTopology");
+		profile = new Profiler("TreeTopology");
 	}
 
 	public void genTop() {

@@ -28,7 +28,7 @@ public class NetworkSimulator extends Thread {
 
 	private Deque<JobInfo> checkProgress = new LinkedBlockingDeque<JobInfo>();
 
-	private Profiler profile = new Profiler("/Users/eric/Google Drive/GitHub/MapReduceSimulator/Results/", "Tasks");
+	private Profiler profile = new Profiler("Tasks");
 
 	private JobInfo curr = null;
 

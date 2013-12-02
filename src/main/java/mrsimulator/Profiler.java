@@ -4,11 +4,9 @@ import java.io.*;
 
 class Profiler {
 
-	private String directory;
 	private PrintWriter pw = null;
 
-	public Profiler(String dir, String name) {
-		directory = dir;
+	public Profiler(String name) {
 		FileWriter fw = null;
 		try {
 			fw = new FileWriter(new File(name));

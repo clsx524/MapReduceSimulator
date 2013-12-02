@@ -9,14 +9,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 public class FIFOScheduler implements Scheduler  {
 
-	// private class StartTimeComparator implements Comparator<JobInfo.TaskInfo> {
-	// 	public int compare(JobInfo.TaskInfo j1, JobInfo.TaskInfo j2) {
-	// 		return j1.getStartTime().compareTo(j2.getStartTime());
-	// 	}
-	// }
-
 	private Queue <JobInfo.TaskInfo> queue = new LinkedBlockingQueue<JobInfo.TaskInfo>();
-	// private StartTimeComparator atc = new StartTimeComparator();
 
 	private NetworkSimulator networkInstance = NetworkSimulator.getInstance();
 
