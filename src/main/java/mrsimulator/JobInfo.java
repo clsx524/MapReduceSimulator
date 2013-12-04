@@ -12,13 +12,14 @@ public class JobInfo {
 	public class TaskInfo {
 
 		public int taskID = -1;
-		public long duration = -1L;
+		public long duration = 0L;
 		public Integer fileSize = -1; // bytes
 		public Integer nodeIndex = -1;
 		public long startTime = -1;
 		public long endTime = -1;
 		public boolean progress = false;
 		public boolean taskType = true; // true MAP; false REDUCE
+		public double netTime = 0.0;
 
 		public String toString() {
 			return jobID + " " + taskID + " " + duration + " " + fileSize + " " + nodeIndex + " " + startTime + " " + endTime + " " + taskType;
@@ -46,13 +47,22 @@ public class JobInfo {
 			return mapNumber + reduceNumber;
 		}
 		public void setDuration(double d) {
-			duration = (long) d;
+			duration += (long) d;
 		}
 		public Set<Integer> getMapPrefs() {
 			return mapPrefs;
 		}
 		public Set<Integer> getReducePrefs() {
 			return reducePrefs;
+		}
+		public void updateDuration() {
+			if (taskType) {
+				if (!mapPrefs.contains(nodeIndex))
+					setDuration(netTime);
+			} else {
+				if (!reducePrefs.contains(nodeIndex))
+					setDuration(netTime);
+			}
 		}
 		public void setReducePrefs() {
 			if (taskType == true) {
@@ -136,14 +146,16 @@ public class JobInfo {
 			maps[i] = this.new TaskInfo();
 			maps[i].taskID = i;
 			maps[i].taskType = true;
+			
 			if (mapBytes > blockSize) {
-				maps[i].setDuration((blockSize.doubleValue() / Configure.execSpeed + blockSize.doubleValue() / Configure.ioSpeed) * Math.pow(10.0, 6.0));
+				maps[i].setDuration(blockSize.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0));
 				maps[i].fileSize = blockSize.intValue();
 				mapBytes -= blockSize;				
 			} else {
-				maps[i].setDuration((mapBytes.doubleValue() / Configure.execSpeed + mapBytes.doubleValue() / Configure.ioSpeed) * Math.pow(10.0, 6.0));
+				maps[i].setDuration(mapBytes.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0));
 				maps[i].fileSize = mapBytes.intValue();				
 			}
+			maps[i].netTime = maps[i].fileSize.doubleValue() / Configure.ioSpeed * Math.pow(10.0, 6.0);
 		}
 
 		Long reduceBytes = reduceOutputBytes;
@@ -151,12 +163,14 @@ public class JobInfo {
 			reduces[i] = this.new TaskInfo();
 			reduces[i].taskID = i;
 			reduces[i].taskType = false;
+			reduces[i].netTime = shuffleBytes.doubleValue() / Configure.ioSpeed / reduceNumber * Math.pow(10.0, 6.0);
+
 			if (reduceBytes > blockSize) {
-				reduces[i].setDuration((blockSize.doubleValue() / Configure.execSpeed + shuffleBytes.doubleValue() / Configure.ioSpeed / reduceNumber) * Math.pow(10.0, 6.0));
+				reduces[i].setDuration(blockSize.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0));
 				reduces[i].fileSize = blockSize.intValue();
 				mapBytes -= blockSize;				
 			} else {
-				reduces[i].setDuration((reduceBytes.doubleValue() / Configure.execSpeed + shuffleBytes.doubleValue() / Configure.ioSpeed / reduceNumber) * Math.pow(10.0, 6.0));
+				reduces[i].setDuration(reduceBytes.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0));
 				reduces[i].fileSize = reduceBytes.intValue();				
 			}
 		}

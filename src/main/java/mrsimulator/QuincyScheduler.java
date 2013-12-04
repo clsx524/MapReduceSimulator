@@ -138,6 +138,7 @@ public class QuincyScheduler implements Scheduler  {
 									task.nodeIndex = i;
 									if (task.taskType == true)
 										task.setReducePrefs();
+									task.updateDuration();
 									timer.scheduleTask(task);
 								}
 								if (curr.runningTasks == 0) {

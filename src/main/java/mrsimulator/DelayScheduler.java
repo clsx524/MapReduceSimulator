@@ -126,6 +126,7 @@ public class DelayScheduler implements Scheduler  {
 					}
 					if (curr.taskType == true)
 						curr.setReducePrefs();
+					curr.updateDuration();
 					timer.scheduleTask(curr);
 				}
 			}

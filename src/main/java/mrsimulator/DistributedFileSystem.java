@@ -52,7 +52,7 @@ public class DistributedFileSystem {
 
 	private void replicationPlacement(JobInfo job, int rack) {
 		int i = 0;
-		int expectedExtraReplica = job.mapNumber / Configure.slotsPerNode / Configure.machinesPerRack + Configure.replicaDelta;
+		int expectedExtraReplica = (job.mapNumber / Configure.slotsPerNode / Configure.machinesPerRack) % Configure.racks + Configure.replicaDelta;
 		while (i < replicaNumber-1) {
 			int j = rd.nextInt(machinesPerRack) + rack * machinesPerRack;
 			boolean res = job.mapPrefs.add(j);
