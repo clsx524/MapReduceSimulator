@@ -8,6 +8,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
 public class SimulatorEngine {
@@ -17,6 +19,7 @@ public class SimulatorEngine {
 	private BufferedReader inputReader = null;
 
 	private ArrayList<JobInfo> allJobs = new ArrayList<JobInfo>();
+	private Map<Integer, JobInfo> jobs = new HashMap<Integer, JobInfo>();
 
 	private Scheduler schedulerInstance = null;
 	private NetworkSimulator networkInstance = null;
@@ -44,10 +47,12 @@ public class SimulatorEngine {
 		}
 		readInputFile();
 
-		try {
-			inputReader = new BufferedReader(new FileReader(networkFilePath));
-		} catch (FileNotFoundException io) {
-			System.out.println("Exception thrown  :" + io);
+		if (Configure.secondPhase) {
+			try {
+				inputReader = new BufferedReader(new FileReader(networkFilePath));
+			} catch (FileNotFoundException io) {
+				System.out.println("Exception thrown  :" + io);
+			}
 		}
 
 		/************* Init topology *************/
@@ -82,8 +87,11 @@ public class SimulatorEngine {
 	private void readInputFile() {
 		String line = null;
 		try {
-			while ((line = inputReader.readLine()) != null)
-           		allJobs.add(parseJob(line));
+			while ((line = inputReader.readLine()) != null) {
+				JobInfo j = parseJob(line);
+           		allJobs.add(j);
+           		jobs.put(j.jobID, j);
+           	}
         	inputReader.close();
         	inputReader = null;
         	Configure.total = allJobs.size();
@@ -100,9 +108,9 @@ public class SimulatorEngine {
 			while ((line = inputReader.readLine()) != null) {
 				String[] strs = line.split(" ");
 				if (Boolean.parseBoolean(strs[3]))
-					allJobs.get(Integer.parseInt(strs[0])).maps[Integer.parseInt(strs[1])].netTime = Double.parseDouble(strs[strs.length-1]) * Math.pow(10.0, 6.0);
+					jobs.get(Integer.parseInt(strs[0])).maps[Integer.parseInt(strs[1])].netTime = Double.parseDouble(strs[strs.length-1]) * Math.pow(10.0, 6.0);
 				else 
-					allJobs.get(Integer.parseInt(strs[0])).reduces[Integer.parseInt(strs[1])].netTime = Double.parseDouble(strs[strs.length-1]) * Math.pow(10.0, 6.0);
+					jobs.get(Integer.parseInt(strs[0])).reduces[Integer.parseInt(strs[1])].netTime = Double.parseDouble(strs[strs.length-1]) * Math.pow(10.0, 6.0);
 			}
         	inputReader.close();
         	inputReader = null;
@@ -122,6 +130,14 @@ public class SimulatorEngine {
     	for (JobInfo job : allJobs) {
     		timer.scheduleJob(job);	
     	}
+	}
+
+	public double totalRunningTime() {
+		double t = 0;
+		for (JobInfo job : allJobs) {
+			t += (job.endTime - job.startTime);
+		}
+		return t;
 	}
 
 	public void join() {
@@ -148,6 +164,14 @@ public class SimulatorEngine {
 				i++;
 			}
 			System.out.println("All Jobs finished");
+
+			double time = totalRunningTime();
+			System.out.println("************ Results Summary ************");
+			System.out.println("totalRunningTime: " + time);
+			System.out.println("************************************************");		
+			networkInstance.profile.println("totalRunningTime: " + time);
+			networkInstance.stopThread();	
+
     		timer.join();
     		schedulerInstance.join();
     		networkInstance.join();

@@ -45,6 +45,6 @@ class TreeTopology extends Topology {
 		for (int i = 0; i < aggrSwitch; i++) {
 			profile.print2ln("aggrSwitch" + i, "l3Core0");
 		}		
-
+		profile.close();
 	}
 }

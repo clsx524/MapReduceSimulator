@@ -28,7 +28,7 @@ public class NetworkSimulator extends Thread {
 
 	private Deque<JobInfo> checkProgress = new LinkedBlockingDeque<JobInfo>();
 
-	private Profiler profile = new Profiler("Tasks");
+	public Profiler profile = new Profiler(Configure.resultFileName);
 
 	private JobInfo curr = null;
 
@@ -86,16 +86,18 @@ public class NetworkSimulator extends Thread {
             	while(it.hasNext()) {
             		JobInfo curr = it.next();
             		curr.updateProgress();
+
+
+
+
             		if (curr.isFinished()) {
             			System.out.println("Job finished: " + curr.jobID);
             			finished++;
             			checkProgress.remove(curr);
 	            		curr.setJobEndTime();
     	        		profile.print(curr);
-        	    		if (finished == Configure.total) {
+        	    		if (finished == Configure.total)
             				schedulerInstance.stop();
-            				stopSign = true;
-            			}
 	            	} else if (curr.finished == false && curr.reduceStarted == false && curr.prog() >= Configure.reduceStartPercentage) {
         	    		schedulerInstance.schedule(curr.reduces);
             			curr.reduceStarted = true;
@@ -103,6 +105,7 @@ public class NetworkSimulator extends Thread {
             	}       	
             }
         }
+        profile.close();
         System.out.println("NetworkSimulator has terminated safely");
 	}
 
@@ -144,5 +147,9 @@ public class NetworkSimulator extends Thread {
 
 	public String getQueue() {
 		return queue.toString();
+	}
+
+	public void stopThread() {
+		stopSign = true;
 	}
 }

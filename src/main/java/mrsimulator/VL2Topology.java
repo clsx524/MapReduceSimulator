@@ -40,7 +40,8 @@ class VL2Topology extends Topology {
 		for (int i = 0; i < aggrSwitch; i++) {
 			for (int j = 0; j < l3Core; j++)
 				profile.print2ln("aggrSwitch" + i, "l3Core" + j);
-		}		
+		}
+		profile.close();		
 	}
 
 

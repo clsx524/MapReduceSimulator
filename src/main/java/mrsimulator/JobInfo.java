@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.lang.Math;
 
+import org.apache.commons.math3.distribution.*;
+
 public class JobInfo {
 
 	public class TaskInfo {
@@ -20,6 +22,9 @@ public class JobInfo {
 		public boolean progress = false;
 		public boolean taskType = true; // true MAP; false REDUCE
 		public double netTime = 0.0;
+		public boolean isRunning = false;
+		public double progressRate = 0.0;
+		public double estimateCompletion = 0.0;
 
 		public String toString() {
 			return jobID + " " + taskID + " " + duration + " " + fileSize + " " + nodeIndex + " " + startTime + " " + endTime + " " + taskType;
@@ -63,6 +68,7 @@ public class JobInfo {
 				if (!reducePrefs.contains(nodeIndex))
 					setDuration(netTime);
 			}
+			progressRate = 1.0/duration;
 		}
 		public void setReducePrefs() {
 			if (taskType == true) {
@@ -141,6 +147,7 @@ public class JobInfo {
 
 		maps = new TaskInfo[mapNumber];
 		reduces = new TaskInfo[reduceNumber];
+		double temp;
 		Long mapBytes = mapInputBytes;
 		for (int i = 0; i < mapNumber; i++) {
 			maps[i] = this.new TaskInfo();
@@ -148,11 +155,13 @@ public class JobInfo {
 			maps[i].taskType = true;
 			
 			if (mapBytes > blockSize) {
-				maps[i].setDuration(blockSize.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0));
+				temp = blockSize.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0);
+				maps[i].setDuration(temp + rpareto(temp, Configure.paretoShape));
 				maps[i].fileSize = blockSize.intValue();
 				mapBytes -= blockSize;				
 			} else {
-				maps[i].setDuration(mapBytes.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0));
+				temp = mapBytes.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0);
+				maps[i].setDuration(temp + rpareto(temp, Configure.paretoShape));
 				maps[i].fileSize = mapBytes.intValue();				
 			}
 			maps[i].netTime = maps[i].fileSize.doubleValue() / Configure.ioSpeed * Math.pow(10.0, 6.0);
@@ -166,11 +175,13 @@ public class JobInfo {
 			reduces[i].netTime = shuffleBytes.doubleValue() / Configure.ioSpeed / reduceNumber * Math.pow(10.0, 6.0);
 
 			if (reduceBytes > blockSize) {
-				reduces[i].setDuration(blockSize.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0));
+				temp = blockSize.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0);
+				reduces[i].setDuration(temp + rpareto(temp, Configure.paretoShape));
 				reduces[i].fileSize = blockSize.intValue();
 				mapBytes -= blockSize;				
 			} else {
-				reduces[i].setDuration(reduceBytes.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0));
+				temp = reduceBytes.doubleValue() / Configure.execSpeed * Math.pow(10.0, 6.0);
+				reduces[i].setDuration(temp + rpareto(temp, Configure.paretoShape));
 				reduces[i].fileSize = reduceBytes.intValue();				
 			}
 		}
@@ -198,12 +209,18 @@ public class JobInfo {
 	public void updateProgress() {
 		int mp = 0;
 		int rp = 0;
-		for (int i = 0; i < mapNumber; i++)
+		for (int i = 0; i < mapNumber; i++) {
 			if (maps[i].progress == true)
 				mp++;
-		for (int i = 0; i < reduceNumber; i++)
+			maps[i].estimateCompletion = maps[i].duration + maps[i].startTime - System.currentTimeMillis();			
+		}
+
+		for (int i = 0; i < reduceNumber; i++) {
 			if (reduces[i].progress == true)
 				rp++;	
+			reduces[i].estimateCompletion = reduces[i].duration + reduces[i].startTime - System.currentTimeMillis();			
+		}
+
 		mapProgress = mp;
 		reduceProgress = rp;	
 	}
@@ -225,5 +242,11 @@ public class JobInfo {
 	}
 	public void setJobEndTime() {
 		endTime = System.currentTimeMillis() - Configure.initialTime;
+	}
+
+	public double rpareto(double scale, double shape) {
+		//ParetoDistribution pd = new ParetoDistribution(scale, shape);
+		//return pd.sample();
+		return 0.0;
 	}
 }

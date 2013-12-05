@@ -41,7 +41,8 @@ class FatTreeTopology extends Topology {
 			int group = i % 2;
 			for (int j = 0; j < l3Core / 2; j++)
 				profile.print2ln("aggrSwitch" + i, "l3Core" + (group*l3Core/2 + j));
-		}		
+		}	
+		profile.close();	
 	}
 
 

@@ -49,6 +49,7 @@ public class Timer {
     public void scheduleTask(JobInfo.TaskInfo task) {
         networksimulator.occupyOneSlotAtNode(task.nodeIndex);
         task.startTime = System.currentTimeMillis() - Configure.initialTime;
+        task.isRunning = true;
         taskQueue.schedule(new TaskAfterTimerDone(task), task.duration, TimeUnit.MICROSECONDS);
         currQueueLength++;
         totalTimes++;
@@ -87,6 +88,7 @@ public class Timer {
 
         public void run() {
             networksimulator.addOneSlotAtNode(task.nodeIndex);
+            task.isRunning = false;
             task.progress = true;
             task.endTime = System.currentTimeMillis() - Configure.initialTime;
         }
